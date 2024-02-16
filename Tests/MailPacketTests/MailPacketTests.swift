@@ -5,6 +5,25 @@ import Studding
 
 import MailPacket
 
+fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
+fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
+
 final class MailPacketTests: XCTestCase {
-    
+    func testIMAP0() {
+        let expectation = XCTestExpectation(description: #function)
+
+        let imap = IMAP(domain: "imap.gmail.com",
+                        port: 993)
+        
+        imap.beConnect(account: account,
+                       password: password,
+                       Flynn.any) { error in
+            
+            XCTAssertNil(error)
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10)
+    }
 }

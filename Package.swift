@@ -26,6 +26,7 @@ let package = Package(
                 "Spanker",
                 "Studding",
                 "Sextant",
+                "libetpan"
 			],
             plugins: [
                 .plugin(name: "FlynnPlugin", package: "Flynn")
