@@ -31,6 +31,16 @@ let package = Package(
                 .plugin(name: "FlynnPlugin", package: "Flynn")
             ]
         ),
+        .target(
+            name: "libetpan",
+            dependencies: [ ],
+            cxxSettings: [
+                .headerSearchPath("./**"),
+                .define("HAVE_CFNETWORK"),
+                .define("HAVE_CONFIG_H"),
+                .define("LIBETPAN_IOS_DISABLE_SSL"),
+            ]
+        ),
         .testTarget(
             name: "MailPacketTests",
             dependencies: [
@@ -40,5 +50,17 @@ let package = Package(
                 "Spanker"
             ]
         )
-    ]
+    ],
+    cLanguageStandard: .c99
+    
+    // -DHAVE_CFNETWORK=1 -DHAVE_CONFIG_H=1 -DLIBETPAN_IOS_DISABLE_SSL=1
+    //.define("HAVE_CFNETWORK", .when(platforms: [.iOS])),
+    //.define("HAVE_CONFIG_H"),
+    /*
+    linkerSettings: [
+        .linkedLibrary("z"),
+        .linkedLibrary("tesseract", .when(platforms: [.linux])),
+        .linkedLibrary("leptonica", .when(platforms: [.linux]))
+    ]*/
+
 )
