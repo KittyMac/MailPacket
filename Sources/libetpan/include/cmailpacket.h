@@ -2,6 +2,7 @@
 #define ctess_h
 
 #import <stdlib.h>
+#include <stdint.h>
 
 typedef struct CIMAP {
     void * mailimap;

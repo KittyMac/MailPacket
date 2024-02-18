@@ -2,6 +2,7 @@ FROM swift:5.8-jammy as builder
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && apt-get -q update && \
     apt-get install -y \
+    libdb-dev \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
