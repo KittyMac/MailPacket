@@ -41,4 +41,40 @@ public class IMAP: Actor {
             returnCallback(nil)
         }
     }
+    
+    internal func _beSelect(folder: String,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        queue.addOperation {
+            let result: CError = cmailimap_select(self.imap, "INBOX")
+            if let error = result.toString() {
+                return returnCallback(error)
+            }
+            
+            returnCallback(nil)
+        }
+    }
+    
+    internal func _beSearch(folder: String,
+                            after: Date,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        queue.addOperation {
+            var result: CError = cmailimap_select(self.imap, "INBOX")
+            if let error = result.toString() {
+                return returnCallback(error)
+            }
+            
+            let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: after)
+            guard let day = calendarDate.day,
+                  let month = calendarDate.month,
+                  let year = calendarDate.year else {
+                return returnCallback("failed to extract date components")
+            }
+            result = cmailimap_uid_search(self.imap, Int32(day), Int32(month), Int32(year))
+            if let error = result.toString() {
+                return returnCallback(error)
+            }
+            
+            returnCallback(nil)
+        }
+    }
 }

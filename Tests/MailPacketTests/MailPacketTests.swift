@@ -17,11 +17,17 @@ final class MailPacketTests: XCTestCase {
         
         imap.beConnect(account: account,
                        password: password,
-                       Flynn.any) { error in
+                       imap) { error in
             
             XCTAssertNil(error)
             
-            expectation.fulfill()
+            imap.beSearch(folder: "INBOX",
+                          after: Date(timeIntervalSinceNow: 60 * 60 * 24 * 30 * -1),
+                          imap) { error in
+                XCTAssertNil(error)
+                
+                expectation.fulfill()
+            }
         }
         
         wait(for: [expectation], timeout: 10)
