@@ -172,7 +172,9 @@
 /* #define USE_SASL 1 */
 
 /* Define to use OpenSSL */
-/* #undef USE_SSL */
+#ifndef __APPLE__
+#define USE_SSL 1
+#endif
 
 /* Version number of package */
 #define VERSION "1.6"

@@ -43,16 +43,15 @@ let package = Package(
                 .headerSearchPath("./driver/interface/"),
                 .headerSearchPath("./driver/tools/"),
                 .headerSearchPath("./data-types/"),
-                // TODO: what to do about linux?
-                .define("HAVE_CFNETWORK", .when(platforms: [.iOS, .macOS])),
                 .define("HAVE_CONFIG_H"),
-                .define("LIBETPAN_IOS_DISABLE_SSL"),
+                .define("HAVE_CFNETWORK", .when(platforms: [.iOS, .macOS])),
+                .define("LIBETPAN_IOS_DISABLE_SSL", .when(platforms: [.iOS, .macOS])),
             ],
             linkerSettings: [
-                .linkedLibrary("z"),
-                .linkedLibrary("db"),
-                //.linkedLibrary("tesseract", .when(platforms: [.linux])),
-                //.linkedLibrary("leptonica", .when(platforms: [.linux]))
+                .linkedLibrary("z", .when(platforms: [.linux, .android])),
+                .linkedLibrary("db", .when(platforms: [.linux, .android])),
+                .linkedLibrary("ssl", .when(platforms: [.linux, .android])),
+                .linkedLibrary("crypto", .when(platforms: [.linux, .android])),
             ]
         ),
         .testTarget(
@@ -65,16 +64,4 @@ let package = Package(
             ]
         )
     ]
-    //cLanguageStandard: .c99
-    
-    // -DHAVE_CFNETWORK=1 -DHAVE_CONFIG_H=1 -DLIBETPAN_IOS_DISABLE_SSL=1
-    //.define("HAVE_CFNETWORK", .when(platforms: [.iOS])),
-    //.define("HAVE_CONFIG_H"),
-    /*
-    linkerSettings: [
-        .linkedLibrary("z"),
-        .linkedLibrary("tesseract", .when(platforms: [.linux])),
-        .linkedLibrary("leptonica", .when(platforms: [.linux]))
-    ]*/
-
 )
