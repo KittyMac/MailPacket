@@ -9,6 +9,7 @@ let package = Package(
     ],
     products: [
         .library( name: "MailPacket", targets: ["MailPacket"] ),
+        .library( name: "libetpan", type: .dynamic, targets: ["libetpan"]),
     ],
     dependencies: [
         .package(url: "https://github.com/KittyMac/Flynn.git", from: "0.4.0"),
