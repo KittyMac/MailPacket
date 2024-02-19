@@ -5,8 +5,8 @@ import Studding
 
 import MailPacket
 
-//fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
-//fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
+fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
+fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
 
 final class MailPacketTests: XCTestCase {
     func testIMAP0() {
@@ -15,16 +15,19 @@ final class MailPacketTests: XCTestCase {
         let imap = IMAP(domain: "imap.gmail.com",
                         port: 993)
         
-        imap.beConnect(account: "test.rocco.receiptpal@gmail.com",
-                       password: "qtxf ktfw wutc fntv",
+        imap.beConnect(account: account,
+                       password: password,
                        imap) { error in
             
             XCTAssertNil(error)
             
             imap.beSearch(folder: "INBOX",
                           after: Date(timeIntervalSinceNow: 60 * 60 * 24 * 30 * -1),
-                          imap) { error in
+                          smaller: 1024 * 512,
+                          imap) { error, messageIds in
                 XCTAssertNil(error)
+                
+                print(messageIds)
                 
                 expectation.fulfill()
             }

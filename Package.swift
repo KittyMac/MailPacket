@@ -38,6 +38,7 @@ let package = Package(
             dependencies: [ ],
             cxxSettings: [
                 .headerSearchPath("./"),
+                .headerSearchPath("./cJSON/"),
                 .headerSearchPath("./main/"),
                 .headerSearchPath("./libetpan/"),
                 .headerSearchPath("./libetpan/libetpan/"),
