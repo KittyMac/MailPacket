@@ -34,10 +34,21 @@ final class MailPacketTests: XCTestCase {
                     XCTAssertEqual(messageIds.count, headers.count)
                     
                     for header in headers {
-                        print("\(header.messageID): \(header.headers.count) bytes")
+                        print("\(header.messageID): \(header.headers.count) header bytes")
                     }
                     
-                    expectation.fulfill()
+                    imap.beDownload(messageIDs: messageIds, imap) { error, emails in
+                        XCTAssertNil(error)
+                        XCTAssertEqual(messageIds.count, emails.count)
+                        
+                        for email in emails {
+                            print("\(email.messageID): \(email.eml.count) eml bytes")
+                            
+                            try? email.eml.write(toFile: "/tmp/email_\(email.messageID).eml", atomically: false, encoding: .utf8)
+                        }
+                        
+                        expectation.fulfill()
+                    }
                 }
                 
             }

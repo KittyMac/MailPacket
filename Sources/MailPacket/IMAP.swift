@@ -13,6 +13,11 @@ public struct Header: Codable {
     public let headers: String
 }
 
+public struct Email: Codable {
+    public let messageID: Int
+    public let eml: String
+}
+
 public class IMAP: Actor {
     
     private let imap: UnsafeMutableRawPointer?
@@ -90,11 +95,23 @@ public class IMAP: Actor {
             let json = Hitch(own: jsonUTF8)
             let headers: [Header] = json.query("$[*]") ?? []
             return returnCallback(nil, headers)
-
         }
         
+        return returnCallback("unknown error", [])
+    }
+    
+    internal func _beDownload(messageIDs: [Int],
+                              _ returnCallback: @escaping (String?, [Email]) -> ()) {
+        var cMessageIDs = messageIDs.map { Int32($0) }
         
-
+        if let jsonUTF8 = cmailimap_download(self.imap,
+                                             Int32(messageIDs.count),
+                                             &cMessageIDs) {
+            let json = Hitch(own: jsonUTF8)
+            let emails: [Email] = json.query("$[*]") ?? []
+            return returnCallback(nil, emails)
+        }
+        
         return returnCallback("unknown error", [])
     }
 }

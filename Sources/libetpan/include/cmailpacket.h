@@ -20,5 +20,7 @@ extern char * cmailimap_search(void * session,
 extern char * cmailimap_headers(void * session,
                                 int num,
                                 int * uids);
-
+extern char * cmailimap_download(void * session,
+                                 int num,
+                                 int * uids);
 #endif
