@@ -50,7 +50,6 @@ let package = Package(
             ],
             linkerSettings: [
                 .linkedLibrary("z", .when(platforms: [.linux, .android])),
-                .linkedLibrary("db", .when(platforms: [.linux, .android])),
                 .linkedLibrary("ssl", .when(platforms: [.linux, .android])),
                 .linkedLibrary("crypto", .when(platforms: [.linux, .android])),
             ]

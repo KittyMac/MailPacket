@@ -5,8 +5,8 @@ import Studding
 
 import MailPacket
 
-fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
-fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
+//fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
+//fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
 
 final class MailPacketTests: XCTestCase {
     func testIMAP0() {
@@ -15,8 +15,8 @@ final class MailPacketTests: XCTestCase {
         let imap = IMAP(domain: "imap.gmail.com",
                         port: 993)
         
-        imap.beConnect(account: account,
-                       password: password,
+        imap.beConnect(account: "test.rocco.receiptpal@gmail.com",
+                       password: "qtxf ktfw wutc fntv",
                        imap) { error in
             
             XCTAssertNil(error)

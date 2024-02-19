@@ -8,12 +8,13 @@
 #endif
 
 /* Define to detected Berkeley DB major version number */
+/*
 #ifdef __APPLE__
 #define DBVERS 1
 #else
 #define DBVERS 3
 #endif
-
+*/
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
