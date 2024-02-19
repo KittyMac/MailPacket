@@ -9,7 +9,7 @@ fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Developmen
 fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
 
 final class MailPacketTests: XCTestCase {
-    func testIMAP0() {
+    func testIMAPSearch0() {
         let expectation = XCTestExpectation(description: #function)
 
         let imap = IMAP(domain: "imap.gmail.com",
@@ -26,13 +26,24 @@ final class MailPacketTests: XCTestCase {
                           smaller: 1024 * 512,
                           imap) { error, messageIds in
                 XCTAssertNil(error)
-                
+                                
                 print(messageIds)
                 
-                expectation.fulfill()
+                imap.beHeaders(messageIDs: messageIds, imap) { error, headers in
+                    XCTAssertNil(error)
+                    XCTAssertEqual(messageIds.count, headers.count)
+                    
+                    for header in headers {
+                        print("\(header.messageID): \(header.headers.count) bytes")
+                    }
+                    
+                    expectation.fulfill()
+                }
+                
             }
         }
         
         wait(for: [expectation], timeout: 10)
     }
+    
 }

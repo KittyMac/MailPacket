@@ -8,6 +8,11 @@ import Sextant
 import FoundationNetworking
 #endif
 
+public struct Header: Codable {
+    public let messageID: Int
+    public let headers: String
+}
+
 public class IMAP: Actor {
     
     private let imap: UnsafeMutableRawPointer?
@@ -62,16 +67,34 @@ public class IMAP: Actor {
               let year = calendarDate.year else {
             return returnCallback("failed to extract date components", [])
         }
-        if let jsonUTF8 = cmailimap_uid_search(self.imap,
-                                               Int32(day),
-                                               Int32(month),
-                                               Int32(year),
-                                               Int32(smaller)) {
+        if let jsonUTF8 = cmailimap_search(self.imap,
+                                           Int32(day),
+                                           Int32(month),
+                                           Int32(year),
+                                           Int32(smaller)) {
             let json = Hitch(own: jsonUTF8)
             let messageIDs: [Int] = json.query("$[*]") ?? []
             return returnCallback(nil, messageIDs)
         }
         
+        return returnCallback("unknown error", [])
+    }
+    
+    internal func _beHeaders(messageIDs: [Int],
+                             _ returnCallback: @escaping (String?, [Header]) -> ()) {
+        var cMessageIDs = messageIDs.map { Int32($0) }
+        
+        if let jsonUTF8 = cmailimap_headers(self.imap,
+                                            Int32(messageIDs.count),
+                                            &cMessageIDs) {
+            let json = Hitch(own: jsonUTF8)
+            let headers: [Header] = json.query("$[*]") ?? []
+            return returnCallback(nil, headers)
+
+        }
+        
+        
+
         return returnCallback("unknown error", [])
     }
 }
