@@ -10,6 +10,10 @@ void * cmailimap_new() {
     return mailimap_new(0, NULL);
 }
 
+void cmailimap_free(void * session) {
+    return mailimap_free(session);
+}
+
 int cmailimap_ssl_connect(void * f, const char * server, uint16_t port) {
     return mailimap_ssl_connect(f, server, port);
 }

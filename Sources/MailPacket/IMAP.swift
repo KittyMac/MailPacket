@@ -22,24 +22,25 @@ public class IMAP: Actor {
     private let queue: OperationQueue
 
     private let imap: UnsafeMutableRawPointer?
-    private let domain: String
-    private let port: Int
     
-    public init(domain: String,
-                port: Int) {
+    public override init() {
         queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
 
         imap = cmailimap_new()
-        self.domain = domain
-        self.port = port
     }
     
-    internal func _beConnect(account: String,
+    deinit {
+        cmailimap_free(imap)
+    }
+    
+    internal func _beConnect(domain: String,
+                             port: Int,
+                             account: String,
                              password: String,
                              _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {
-            var result: CError = cmailimap_ssl_connect(self.imap, "imap.gmail.com", 993)
+            var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
             if let error = result.toString() {
                 return returnCallback(error)
             }

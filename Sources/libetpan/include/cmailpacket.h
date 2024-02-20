@@ -9,6 +9,7 @@ typedef struct CIMAP {
 } CIMAP;
 
 extern void * cmailimap_new();
+extern void * cmailimap_free(void * session);
 extern int cmailimap_ssl_connect(void * f, const char * server, uint16_t port);
 extern int cmailimap_login(void * session, const char * userid, const char * password);
 extern int cmailimap_select(void * session, const char * mb);

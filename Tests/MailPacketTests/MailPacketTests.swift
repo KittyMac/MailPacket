@@ -12,10 +12,11 @@ final class MailPacketTests: XCTestCase {
     func testIMAPSearch0() {
         let expectation = XCTestExpectation(description: #function)
 
-        let imap = IMAP(domain: "imap.gmail.com",
-                        port: 993)
+        let imap = IMAP()
         
-        imap.beConnect(account: account,
+        imap.beConnect(domain: "imap.gmail.com",
+                       port: 993,
+                       account: account,
                        password: password,
                        imap) { error in
             
