@@ -19,10 +19,10 @@ public struct Email: Codable {
 }
 
 public struct ConnectionInfo: Codable {
-    let domain: String
-    let port: Int
-    let account: String
-    let password: String
+    public let domain: String
+    public let port: Int
+    public let account: String
+    public let password: String
     
     public init(domain: String,
                 port: Int,
