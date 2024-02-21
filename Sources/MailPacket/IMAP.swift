@@ -18,10 +18,29 @@ public struct Email: Codable {
     public let eml: String
 }
 
+public struct ConnectionInfo: Codable {
+    let domain: String
+    let port: Int
+    let account: String
+    let password: String
+    
+    public init(domain: String,
+                port: Int,
+                account: String,
+                password: String) {
+        self.domain = domain
+        self.port = port
+        self.account = account
+        self.password = password
+    }
+}
+
 public class IMAP: Actor {
     private let queue: OperationQueue
 
     private let imap: UnsafeMutableRawPointer?
+    
+    public var unsafeConnectionInfo: ConnectionInfo?
     
     public override init() {
         queue = OperationQueue()
@@ -32,6 +51,10 @@ public class IMAP: Actor {
     
     deinit {
         cmailimap_free(imap)
+    }
+    
+    internal func _beGetConnection() -> ConnectionInfo? {
+        return unsafeConnectionInfo
     }
     
     internal func _beConnect(domain: String,
@@ -49,6 +72,11 @@ public class IMAP: Actor {
             if let error = result.toString() {
                 return returnCallback(error)
             }
+            
+            self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
+                                                       port: port,
+                                                       account: account,
+                                                       password: password)
             
             returnCallback(nil)
         }
