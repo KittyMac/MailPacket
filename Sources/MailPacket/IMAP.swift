@@ -78,6 +78,11 @@ public class IMAP: Actor {
                                                        account: account,
                                                        password: password)
             
+            result = cmailimap_select(self.imap, "INBOX")
+            if let error = result.toString() {
+                return returnCallback(error)
+            }
+            
             returnCallback(nil)
         }
     }
@@ -85,7 +90,7 @@ public class IMAP: Actor {
     internal func _beSelect(folder: String,
                             _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {
-            let result: CError = cmailimap_select(self.imap, "INBOX")
+            let result: CError = cmailimap_select(self.imap, folder)
             if let error = result.toString() {
                 return returnCallback(error)
             }
@@ -99,11 +104,6 @@ public class IMAP: Actor {
                             smaller: Int = 0,
                             _ returnCallback: @escaping (String?, [Int]) -> ()) {
         queue.addOperation {
-            let result: CError = cmailimap_select(self.imap, "INBOX")
-            if let error = result.toString() {
-                return returnCallback(error, [])
-            }
-            
             let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: after)
             guard let day = calendarDate.day,
                   let month = calendarDate.month,
