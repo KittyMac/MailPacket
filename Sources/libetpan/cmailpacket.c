@@ -82,9 +82,7 @@ char * cmailimap_headers(void * session,
     struct mailimap_section * section;
     section = mailimap_section_new_text();
     
-    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_body_peek_section_partial(section, 0, 512));
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822_header());
-    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_envelope());
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
 
     clist * fetch_result;
@@ -114,22 +112,8 @@ char * cmailimap_headers(void * session,
                 cJSON_AddNumberToObject(messageJsonObj, "messageID", item->att_data.att_static->att_data.att_uid);
             }
             
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_ENVELOPE) {
-                struct mailimap_envelope * att_env = item->att_data.att_static->att_data.att_env;
-                if (att_env->env_date != NULL) {
-                    cJSON_AddStringToObject(messageJsonObj, "env_date", att_env->env_date);
-                }
-                if (att_env->env_subject != NULL) {
-                    cJSON_AddStringToObject(messageJsonObj, "env_subject", att_env->env_subject);
-                }
-            }
-            
             if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822_HEADER) {
                 cJSON_AddStringToObject(messageJsonObj, "headers", item->att_data.att_static->att_data.att_rfc822_header.att_content);
-            }
-            
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_BODY_SECTION) {
-                cJSON_AddStringToObject(messageJsonObj, "summary", item->att_data.att_static->att_data.att_body_section->sec_body_part);
             }
         }
         

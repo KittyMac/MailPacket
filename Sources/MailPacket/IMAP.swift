@@ -11,9 +11,6 @@ import FoundationNetworking
 public struct Header: Codable {
     public let messageID: Int
     public let headers: String
-    public let env_date: String
-    public let env_subject: String
-    public let summary: String
 }
 
 public struct Email: Codable {
