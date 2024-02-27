@@ -2,14 +2,21 @@
 
 import PackageDescription
 
+#if os(Linux)
+let dynamicLibs: [Product] = [
+    .library( name: "libetpan", type: .dynamic, targets: ["libetpan"])
+]
+#else
+let dynamicLibs: [Product] = []
+#endif
+
 let package = Package(
     name: "MailPacket",
     platforms: [
         .macOS(.v10_13), .iOS(.v11)
     ],
-    products: [
-        .library( name: "MailPacket", targets: ["MailPacket"] ),
-        .library( name: "libetpan", type: .dynamic, targets: ["libetpan"]),
+    products: dynamicLibs + [
+        .library( name: "MailPacket", targets: ["MailPacket"] )
     ],
     dependencies: [
         .package(url: "https://github.com/KittyMac/Flynn.git", from: "0.4.0"),

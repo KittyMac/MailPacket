@@ -44,7 +44,7 @@ char * cmailimap_search(void * session,
     }
 
     clist * search_result;
-    int result = mailimap_search(session, "utf-8", search_key, &search_result);
+    int result = mailimap_uid_search(session, "utf-8", search_key, &search_result);
     
     mailimap_search_key_free(search_key);
     
@@ -79,10 +79,16 @@ char * cmailimap_headers(void * session,
         mailimap_set_add_single(uidSet, uids[i]);
     }
     
-    struct mailimap_fetch_type * fetch_type = mailimap_fetch_type_new_fetch_att(mailimap_fetch_att_new_rfc822_header());
+    struct mailimap_section * section;
+    section = mailimap_section_new_text();
+    
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_body_peek_section_partial(section, 0, 512));
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822_header());
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_envelope());
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
 
     clist * fetch_result;
-    int result = mailimap_fetch(session, uidSet, fetch_type, &fetch_result);
+    int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
     if (result != MAILIMAP_NO_ERROR) {
         return NULL;
     }
@@ -94,6 +100,8 @@ char * cmailimap_headers(void * session,
     for(cur = clist_begin(fetch_result); cur != NULL; cur = clist_next(cur)) {
         struct mailimap_msg_att * msg_att = clist_content(cur);
         
+        cJSON * messageJsonObj = cJSON_CreateObject();
+        
         clistiter * cur2;
         for(cur2 = clist_begin(msg_att->att_list); cur2 != NULL; cur2 = clist_next(cur2)) {
             struct mailimap_msg_att_item * item = clist_content(cur2);
@@ -101,15 +109,31 @@ char * cmailimap_headers(void * session,
             if (item->att_type != MAILIMAP_MSG_ATT_ITEM_STATIC) {
                 continue;
             }
-            if (item->att_data.att_static->att_type != MAILIMAP_MSG_ATT_RFC822_HEADER) {
-                continue;
+            
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
+                cJSON_AddNumberToObject(messageJsonObj, "messageID", item->att_data.att_static->att_data.att_uid);
             }
-
-            cJSON * header = cJSON_CreateObject();
-            cJSON_AddNumberToObject(header, "messageID", msg_att->att_number);
-            cJSON_AddStringToObject(header, "headers", item->att_data.att_static->att_data.att_rfc822_header.att_content);
-            cJSON_AddItemToArray(cjson, header);
+            
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_ENVELOPE) {
+                struct mailimap_envelope * att_env = item->att_data.att_static->att_data.att_env;
+                if (att_env->env_date != NULL) {
+                    cJSON_AddStringToObject(messageJsonObj, "env_date", att_env->env_date);
+                }
+                if (att_env->env_subject != NULL) {
+                    cJSON_AddStringToObject(messageJsonObj, "env_subject", att_env->env_subject);
+                }
+            }
+            
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822_HEADER) {
+                cJSON_AddStringToObject(messageJsonObj, "headers", item->att_data.att_static->att_data.att_rfc822_header.att_content);
+            }
+            
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_BODY_SECTION) {
+                cJSON_AddStringToObject(messageJsonObj, "summary", item->att_data.att_static->att_data.att_body_section->sec_body_part);
+            }
         }
+        
+        cJSON_AddItemToArray(cjson, messageJsonObj);
     }
     
     char * json = cJSON_PrintUnformatted(cjson);
@@ -131,10 +155,11 @@ char * cmailimap_download(void * session,
         mailimap_set_add_single(uidSet, uids[i]);
     }
     
-    struct mailimap_fetch_type * fetch_type = mailimap_fetch_type_new_fetch_att(mailimap_fetch_att_new_rfc822());
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822());
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
 
     clist * fetch_result;
-    int result = mailimap_fetch(session, uidSet, fetch_type, &fetch_result);
+    int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
     if (result != MAILIMAP_NO_ERROR) {
         return NULL;
     }
@@ -146,6 +171,8 @@ char * cmailimap_download(void * session,
     for(cur = clist_begin(fetch_result); cur != NULL; cur = clist_next(cur)) {
         struct mailimap_msg_att * msg_att = clist_content(cur);
         
+        cJSON * eml = cJSON_CreateObject();
+
         clistiter * cur2;
         for(cur2 = clist_begin(msg_att->att_list); cur2 != NULL; cur2 = clist_next(cur2)) {
             struct mailimap_msg_att_item * item = clist_content(cur2);
@@ -153,15 +180,15 @@ char * cmailimap_download(void * session,
             if (item->att_type != MAILIMAP_MSG_ATT_ITEM_STATIC) {
                 continue;
             }
-            if (item->att_data.att_static->att_type != MAILIMAP_MSG_ATT_RFC822) {
-                continue;
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
+                cJSON_AddNumberToObject(eml, "messageID", item->att_data.att_static->att_data.att_uid);
             }
-
-            cJSON * eml = cJSON_CreateObject();
-            cJSON_AddNumberToObject(eml, "messageID", msg_att->att_number);
-            cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_rfc822.att_content);
-            cJSON_AddItemToArray(cjson, eml);
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822) {
+                cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_rfc822.att_content);
+            }
         }
+        
+        cJSON_AddItemToArray(cjson, eml);
     }
     
     char * json = cJSON_PrintUnformatted(cjson);

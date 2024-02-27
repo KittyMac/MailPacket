@@ -23,7 +23,7 @@ final class MailPacketTests: XCTestCase {
             XCTAssertNil(error)
             
             imap.beSearch(folder: "INBOX",
-                          after: Date(timeIntervalSinceNow: 60 * 60 * 24 * 30 * -1),
+                          after: "2/26/2024".date()!,
                           smaller: 1024 * 512,
                           imap) { error, messageIds in
                 XCTAssertNil(error)
@@ -36,6 +36,7 @@ final class MailPacketTests: XCTestCase {
                     
                     for header in headers {
                         print("\(header.messageID): \(header.headers.count) header bytes")
+                        //try? header.headers.write(toFile: "/tmp/header\(header.messageID).txt", atomically: false, encoding: .utf8)
                     }
                     
                     imap.beDownload(messageIDs: messageIds, imap) { error, emails in
