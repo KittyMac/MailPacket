@@ -1,8 +1,11 @@
 #include "stdio.h"
-#include "sasl.h"
+#include "sasl/sasl.h"
+#include "sasl/saslutil.h"
 
-extern void __test(void);
-
-void __test(void) {
+int main(int argc, char ** argv) {
+    fprintf(stderr, "libsasl test\n");
     
+    sasl_erasebuffer(NULL, 0);
+    
+    return 0;
 }

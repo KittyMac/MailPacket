@@ -7,53 +7,45 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		46D280E02B94231E00F3FB1B /* canary.c in Sources */ = {isa = PBXBuildFile; fileRef = 46D280DF2B94231E00F3FB1B /* canary.c */; };
-		46D281192B94248600F3FB1B /* gai.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281102B94246600F3FB1B /* gai.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811A2B94248800F3FB1B /* saslutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281112B94246600F3FB1B /* saslutil.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811B2B94248900F3FB1B /* sasl.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281122B94246600F3FB1B /* sasl.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811C2B94248B00F3FB1B /* hmac-md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281132B94246600F3FB1B /* hmac-md5.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811D2B94248F00F3FB1B /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281142B94246600F3FB1B /* md5.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811E2B94249100F3FB1B /* saslplug.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281162B94246600F3FB1B /* saslplug.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D2811F2B94249600F3FB1B /* exits.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281172B94246600F3FB1B /* exits.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D281202B94249700F3FB1B /* prop.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D281182B94246600F3FB1B /* prop.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		46D281212B9424B700F3FB1B /* libsasl2.ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46D280F72B94246600F3FB1B /* libsasl2.ios.a */; };
-		46D281272B9424C600F3FB1B /* libsasl2.macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46D280FF2B94246600F3FB1B /* libsasl2.macos.a */; };
-		46D2812D2B9424D900F3FB1B /* libsasl2.sim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46D281082B94246600F3FB1B /* libsasl2.sim.a */; };
+		46C94A472B943A53002952AA /* gai.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A312B9439CF002952AA /* gai.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A482B943A56002952AA /* saslutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A322B9439CF002952AA /* saslutil.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A492B943A58002952AA /* sasl.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A332B9439CF002952AA /* sasl.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4A2B943A59002952AA /* hmac-md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A342B9439CF002952AA /* hmac-md5.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4B2B943A5A002952AA /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A352B9439CF002952AA /* md5.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4C2B943A5B002952AA /* saslplug.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A362B9439CF002952AA /* saslplug.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4D2B943A5C002952AA /* exits.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A372B9439CF002952AA /* exits.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4E2B943A5D002952AA /* prop.h in Headers */ = {isa = PBXBuildFile; fileRef = 46C94A382B9439CF002952AA /* prop.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46C94A4F2B943A69002952AA /* libsasl2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46C94A1F2B9439CF002952AA /* libsasl2.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		467198D728C7FB9800965042 /* libsasl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libsasl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		46AC0A9D28EA9A3800AB0B67 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		46D280BB2B94226D00F3FB1B /* libsasl2.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasl2.ios.a; path = ../libsasl.bin/lib/iphoneos/libsasl2.ios.a; sourceTree = "<group>"; };
-		46D280BD2B94227500F3FB1B /* libanonymous.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libanonymous.ios.a; path = ../libsasl.bin/lib/iphoneos/sasl2/libanonymous.ios.a; sourceTree = "<group>"; };
-		46D280BF2B94227700F3FB1B /* libcrammd5.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrammd5.ios.a; path = ../libsasl.bin/lib/iphoneos/sasl2/libcrammd5.ios.a; sourceTree = "<group>"; };
-		46D280C12B94227A00F3FB1B /* liblogin.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblogin.ios.a; path = ../libsasl.bin/lib/iphoneos/sasl2/liblogin.ios.a; sourceTree = "<group>"; };
-		46D280C32B94227D00F3FB1B /* libplain.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libplain.ios.a; path = ../libsasl.bin/lib/iphoneos/sasl2/libplain.ios.a; sourceTree = "<group>"; };
-		46D280C52B94227F00F3FB1B /* libsasldb.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasldb.ios.a; path = ../libsasl.bin/lib/iphoneos/sasl2/libsasldb.ios.a; sourceTree = "<group>"; };
-		46D280C72B9422AE00F3FB1B /* libsasl2.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasl2.macos.a; path = ../libsasl.bin/lib/macosx/libsasl2.macos.a; sourceTree = "<group>"; };
-		46D280C92B9422B400F3FB1B /* libanonymous.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libanonymous.macos.a; path = ../libsasl.bin/lib/macosx/sasl2/libanonymous.macos.a; sourceTree = "<group>"; };
-		46D280CB2B9422B700F3FB1B /* libcrammd5.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrammd5.macos.a; path = ../libsasl.bin/lib/macosx/sasl2/libcrammd5.macos.a; sourceTree = "<group>"; };
-		46D280CD2B9422B900F3FB1B /* liblogin.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblogin.macos.a; path = ../libsasl.bin/lib/macosx/sasl2/liblogin.macos.a; sourceTree = "<group>"; };
-		46D280CF2B9422BB00F3FB1B /* libplain.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libplain.macos.a; path = ../libsasl.bin/lib/macosx/sasl2/libplain.macos.a; sourceTree = "<group>"; };
-		46D280D12B9422BD00F3FB1B /* libsasldb.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasldb.macos.a; path = ../libsasl.bin/lib/macosx/sasl2/libsasldb.macos.a; sourceTree = "<group>"; };
-		46D280D32B9422E100F3FB1B /* libsasl2.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasl2.sim.a; path = ../libsasl.bin/lib/iphonesimulator/libsasl2.sim.a; sourceTree = "<group>"; };
-		46D280D52B9422E500F3FB1B /* libanonymous.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libanonymous.sim.a; path = ../libsasl.bin/lib/iphonesimulator/sasl2/libanonymous.sim.a; sourceTree = "<group>"; };
-		46D280D72B9422E700F3FB1B /* libcrammd5.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrammd5.sim.a; path = ../libsasl.bin/lib/iphonesimulator/sasl2/libcrammd5.sim.a; sourceTree = "<group>"; };
-		46D280D92B9422EA00F3FB1B /* liblogin.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblogin.sim.a; path = ../libsasl.bin/lib/iphonesimulator/sasl2/liblogin.sim.a; sourceTree = "<group>"; };
-		46D280DB2B9422ED00F3FB1B /* libplain.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libplain.sim.a; path = ../libsasl.bin/lib/iphonesimulator/sasl2/libplain.sim.a; sourceTree = "<group>"; };
-		46D280DD2B9422EF00F3FB1B /* libsasldb.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsasldb.sim.a; path = ../libsasl.bin/lib/iphonesimulator/sasl2/libsasldb.sim.a; sourceTree = "<group>"; };
-		46D280DF2B94231E00F3FB1B /* canary.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = canary.c; sourceTree = "<group>"; };
-		46D280F72B94246600F3FB1B /* libsasl2.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.ios.a; sourceTree = "<group>"; };
-		46D280FF2B94246600F3FB1B /* libsasl2.macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.macos.a; sourceTree = "<group>"; };
-		46D281082B94246600F3FB1B /* libsasl2.sim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.sim.a; sourceTree = "<group>"; };
-		46D281102B94246600F3FB1B /* gai.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gai.h; sourceTree = "<group>"; };
-		46D281112B94246600F3FB1B /* saslutil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saslutil.h; sourceTree = "<group>"; };
-		46D281122B94246600F3FB1B /* sasl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sasl.h; sourceTree = "<group>"; };
-		46D281132B94246600F3FB1B /* hmac-md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "hmac-md5.h"; sourceTree = "<group>"; };
-		46D281142B94246600F3FB1B /* md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
-		46D281162B94246600F3FB1B /* saslplug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saslplug.h; sourceTree = "<group>"; };
-		46D281172B94246600F3FB1B /* exits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = exits.h; sourceTree = "<group>"; };
-		46D281182B94246600F3FB1B /* prop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = prop.h; sourceTree = "<group>"; };
+		46C94A172B9439CF002952AA /* libsasl2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.a; sourceTree = "<group>"; };
+		46C94A192B9439CF002952AA /* libplain.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplain.a; sourceTree = "<group>"; };
+		46C94A1A2B9439CF002952AA /* liblogin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblogin.a; sourceTree = "<group>"; };
+		46C94A1B2B9439CF002952AA /* libanonymous.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libanonymous.a; sourceTree = "<group>"; };
+		46C94A1C2B9439CF002952AA /* libcrammd5.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrammd5.a; sourceTree = "<group>"; };
+		46C94A1D2B9439CF002952AA /* libsasldb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasldb.a; sourceTree = "<group>"; };
+		46C94A1F2B9439CF002952AA /* libsasl2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.a; sourceTree = "<group>"; };
+		46C94A212B9439CF002952AA /* libplain.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplain.a; sourceTree = "<group>"; };
+		46C94A222B9439CF002952AA /* liblogin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblogin.a; sourceTree = "<group>"; };
+		46C94A232B9439CF002952AA /* libanonymous.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libanonymous.a; sourceTree = "<group>"; };
+		46C94A242B9439CF002952AA /* libcrammd5.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrammd5.a; sourceTree = "<group>"; };
+		46C94A252B9439CF002952AA /* libsasldb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasldb.a; sourceTree = "<group>"; };
+		46C94A282B9439CF002952AA /* libsasl2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasl2.a; sourceTree = "<group>"; };
+		46C94A2A2B9439CF002952AA /* libplain.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplain.a; sourceTree = "<group>"; };
+		46C94A2B2B9439CF002952AA /* liblogin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblogin.a; sourceTree = "<group>"; };
+		46C94A2C2B9439CF002952AA /* libanonymous.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libanonymous.a; sourceTree = "<group>"; };
+		46C94A2D2B9439CF002952AA /* libcrammd5.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrammd5.a; sourceTree = "<group>"; };
+		46C94A2E2B9439CF002952AA /* libsasldb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsasldb.a; sourceTree = "<group>"; };
+		46C94A312B9439CF002952AA /* gai.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gai.h; sourceTree = "<group>"; };
+		46C94A322B9439CF002952AA /* saslutil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saslutil.h; sourceTree = "<group>"; };
+		46C94A332B9439CF002952AA /* sasl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sasl.h; sourceTree = "<group>"; };
+		46C94A342B9439CF002952AA /* hmac-md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "hmac-md5.h"; sourceTree = "<group>"; };
+		46C94A352B9439CF002952AA /* md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
+		46C94A362B9439CF002952AA /* saslplug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saslplug.h; sourceTree = "<group>"; };
+		46C94A372B9439CF002952AA /* exits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = exits.h; sourceTree = "<group>"; };
+		46C94A382B9439CF002952AA /* prop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = prop.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,9 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46D281212B9424B700F3FB1B /* libsasl2.ios.a in Frameworks */,
-				46D281272B9424C600F3FB1B /* libsasl2.macos.a in Frameworks */,
-				46D2812D2B9424D900F3FB1B /* libsasl2.sim.a in Frameworks */,
+				46C94A4F2B943A69002952AA /* libsasl2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,9 +63,8 @@
 		467198CD28C7FB9800965042 = {
 			isa = PBXGroup;
 			children = (
-				46D2810F2B94246600F3FB1B /* include */,
-				46D280F52B94246600F3FB1B /* lib */,
-				46D280DF2B94231E00F3FB1B /* canary.c */,
+				46C94A2F2B9439CF002952AA /* include */,
+				46C94A152B9439CF002952AA /* lib */,
 				467198D828C7FB9800965042 /* Products */,
 				46856A1828CA969C00397C21 /* Frameworks */,
 			);
@@ -92,76 +81,112 @@
 		46856A1828CA969C00397C21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				46D280C52B94227F00F3FB1B /* libsasldb.ios.a */,
-				46D280BB2B94226D00F3FB1B /* libsasl2.ios.a */,
-				46D280BD2B94227500F3FB1B /* libanonymous.ios.a */,
-				46D280BF2B94227700F3FB1B /* libcrammd5.ios.a */,
-				46D280C12B94227A00F3FB1B /* liblogin.ios.a */,
-				46D280C32B94227D00F3FB1B /* libplain.ios.a */,
-				46D280C72B9422AE00F3FB1B /* libsasl2.macos.a */,
-				46D280C92B9422B400F3FB1B /* libanonymous.macos.a */,
-				46D280CB2B9422B700F3FB1B /* libcrammd5.macos.a */,
-				46D280CD2B9422B900F3FB1B /* liblogin.macos.a */,
-				46D280CF2B9422BB00F3FB1B /* libplain.macos.a */,
-				46D280D12B9422BD00F3FB1B /* libsasldb.macos.a */,
-				46D280D32B9422E100F3FB1B /* libsasl2.sim.a */,
-				46D280D52B9422E500F3FB1B /* libanonymous.sim.a */,
-				46D280D72B9422E700F3FB1B /* libcrammd5.sim.a */,
-				46D280D92B9422EA00F3FB1B /* liblogin.sim.a */,
-				46D280DB2B9422ED00F3FB1B /* libplain.sim.a */,
-				46D280DD2B9422EF00F3FB1B /* libsasldb.sim.a */,
-				46AC0A9D28EA9A3800AB0B67 /* WebKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		46D280F52B94246600F3FB1B /* lib */ = {
+		46C94A152B9439CF002952AA /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				46D280F62B94246600F3FB1B /* iphoneos */,
-				46D280FE2B94246600F3FB1B /* macosx */,
-				46D281072B94246600F3FB1B /* iphonesimulator */,
+				46C94A162B9439CF002952AA /* iphoneos */,
+				46C94A1E2B9439CF002952AA /* macosx */,
+				46C94A262B9439CF002952AA /* sasl2 */,
+				46C94A272B9439CF002952AA /* iphonesimulator */,
 			);
 			path = lib;
 			sourceTree = "<group>";
 		};
-		46D280F62B94246600F3FB1B /* iphoneos */ = {
+		46C94A162B9439CF002952AA /* iphoneos */ = {
 			isa = PBXGroup;
 			children = (
-				46D280F72B94246600F3FB1B /* libsasl2.ios.a */,
+				46C94A172B9439CF002952AA /* libsasl2.a */,
+				46C94A182B9439CF002952AA /* sasl2 */,
 			);
 			path = iphoneos;
 			sourceTree = "<group>";
 		};
-		46D280FE2B94246600F3FB1B /* macosx */ = {
+		46C94A182B9439CF002952AA /* sasl2 */ = {
 			isa = PBXGroup;
 			children = (
-				46D280FF2B94246600F3FB1B /* libsasl2.macos.a */,
+				46C94A192B9439CF002952AA /* libplain.a */,
+				46C94A1A2B9439CF002952AA /* liblogin.a */,
+				46C94A1B2B9439CF002952AA /* libanonymous.a */,
+				46C94A1C2B9439CF002952AA /* libcrammd5.a */,
+				46C94A1D2B9439CF002952AA /* libsasldb.a */,
+			);
+			path = sasl2;
+			sourceTree = "<group>";
+		};
+		46C94A1E2B9439CF002952AA /* macosx */ = {
+			isa = PBXGroup;
+			children = (
+				46C94A1F2B9439CF002952AA /* libsasl2.a */,
+				46C94A202B9439CF002952AA /* sasl2 */,
 			);
 			path = macosx;
 			sourceTree = "<group>";
 		};
-		46D281072B94246600F3FB1B /* iphonesimulator */ = {
+		46C94A202B9439CF002952AA /* sasl2 */ = {
 			isa = PBXGroup;
 			children = (
-				46D281082B94246600F3FB1B /* libsasl2.sim.a */,
+				46C94A212B9439CF002952AA /* libplain.a */,
+				46C94A222B9439CF002952AA /* liblogin.a */,
+				46C94A232B9439CF002952AA /* libanonymous.a */,
+				46C94A242B9439CF002952AA /* libcrammd5.a */,
+				46C94A252B9439CF002952AA /* libsasldb.a */,
+			);
+			path = sasl2;
+			sourceTree = "<group>";
+		};
+		46C94A262B9439CF002952AA /* sasl2 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = sasl2;
+			sourceTree = "<group>";
+		};
+		46C94A272B9439CF002952AA /* iphonesimulator */ = {
+			isa = PBXGroup;
+			children = (
+				46C94A282B9439CF002952AA /* libsasl2.a */,
+				46C94A292B9439CF002952AA /* sasl2 */,
 			);
 			path = iphonesimulator;
 			sourceTree = "<group>";
 		};
-		46D2810F2B94246600F3FB1B /* include */ = {
+		46C94A292B9439CF002952AA /* sasl2 */ = {
 			isa = PBXGroup;
 			children = (
-				46D281102B94246600F3FB1B /* gai.h */,
-				46D281112B94246600F3FB1B /* saslutil.h */,
-				46D281122B94246600F3FB1B /* sasl.h */,
-				46D281132B94246600F3FB1B /* hmac-md5.h */,
-				46D281142B94246600F3FB1B /* md5.h */,
-				46D281162B94246600F3FB1B /* saslplug.h */,
-				46D281172B94246600F3FB1B /* exits.h */,
-				46D281182B94246600F3FB1B /* prop.h */,
+				46C94A2A2B9439CF002952AA /* libplain.a */,
+				46C94A2B2B9439CF002952AA /* liblogin.a */,
+				46C94A2C2B9439CF002952AA /* libanonymous.a */,
+				46C94A2D2B9439CF002952AA /* libcrammd5.a */,
+				46C94A2E2B9439CF002952AA /* libsasldb.a */,
+			);
+			path = sasl2;
+			sourceTree = "<group>";
+		};
+		46C94A2F2B9439CF002952AA /* include */ = {
+			isa = PBXGroup;
+			children = (
+				46C94A302B9439CF002952AA /* sasl */,
 			);
 			path = include;
+			sourceTree = "<group>";
+		};
+		46C94A302B9439CF002952AA /* sasl */ = {
+			isa = PBXGroup;
+			children = (
+				46C94A312B9439CF002952AA /* gai.h */,
+				46C94A322B9439CF002952AA /* saslutil.h */,
+				46C94A332B9439CF002952AA /* sasl.h */,
+				46C94A342B9439CF002952AA /* hmac-md5.h */,
+				46C94A352B9439CF002952AA /* md5.h */,
+				46C94A362B9439CF002952AA /* saslplug.h */,
+				46C94A372B9439CF002952AA /* exits.h */,
+				46C94A382B9439CF002952AA /* prop.h */,
+			);
+			path = sasl;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -171,14 +196,14 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46D281192B94248600F3FB1B /* gai.h in Headers */,
-				46D2811A2B94248800F3FB1B /* saslutil.h in Headers */,
-				46D2811B2B94248900F3FB1B /* sasl.h in Headers */,
-				46D2811C2B94248B00F3FB1B /* hmac-md5.h in Headers */,
-				46D2811D2B94248F00F3FB1B /* md5.h in Headers */,
-				46D2811E2B94249100F3FB1B /* saslplug.h in Headers */,
-				46D2811F2B94249600F3FB1B /* exits.h in Headers */,
-				46D281202B94249700F3FB1B /* prop.h in Headers */,
+				46C94A472B943A53002952AA /* gai.h in Headers */,
+				46C94A482B943A56002952AA /* saslutil.h in Headers */,
+				46C94A4C2B943A5B002952AA /* saslplug.h in Headers */,
+				46C94A4E2B943A5D002952AA /* prop.h in Headers */,
+				46C94A4D2B943A5C002952AA /* exits.h in Headers */,
+				46C94A4B2B943A5A002952AA /* md5.h in Headers */,
+				46C94A4A2B943A59002952AA /* hmac-md5.h in Headers */,
+				46C94A492B943A58002952AA /* sasl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,7 +280,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46D280E02B94231E00F3FB1B /* canary.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,6 +320,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -359,6 +384,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

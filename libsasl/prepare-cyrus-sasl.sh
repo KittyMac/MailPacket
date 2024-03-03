@@ -275,7 +275,14 @@ done
 echo "*** creating built package ***"
 
 cd "$BUILD_DIR"
-cp -r "$INSTALL_PATH"/* ./libsasl/
+pwd
+echo "$INSTALL_PATH"/include
+
+rm -rf "$current_dir"/include
+cp -r "$INSTALL_PATH"/include "$current_dir"/include
+
+rm -rf "$current_dir"/lib
+cp -r "$INSTALL_PATH"/lib "$current_dir"/lib
 
 #cp -r "$INSTALL_PATH"/* libsasl.bin/
 #tar -czf "libsasl-$version-ios.tar.gz" libsasl.bin
