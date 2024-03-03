@@ -5,6 +5,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && ap
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
+    libsasl2-dev \
     libjavascriptcoregtk-4.0-dev \
     libatomic1 \
     unzip

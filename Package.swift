@@ -55,10 +55,10 @@ let package = Package(
                 .define("HAVE_CONFIG_H"),
                 .define("HAVE_CFNETWORK", .when(platforms: [.iOS, .macOS])),
                 .define("LIBETPAN_IOS_DISABLE_SSL", .when(platforms: [.iOS, .macOS])),
-                .define("USE_SASL=1", .when(platforms: [.linux, .android, .macOS]))
+                .define("USE_SASL=1", .when(platforms: [.linux, .macOS]))
             ],
             linkerSettings: [
-                .linkedLibrary("sasl", .when(platforms: [.linux, .android, .macOS])),
+                .linkedLibrary("sasl2", .when(platforms: [.linux, .macOS])),
                 .linkedLibrary("z", .when(platforms: [.linux, .android])),
                 .linkedLibrary("ssl", .when(platforms: [.linux, .android])),
                 .linkedLibrary("crypto", .when(platforms: [.linux, .android])),
