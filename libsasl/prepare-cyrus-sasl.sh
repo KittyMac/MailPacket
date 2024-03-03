@@ -69,7 +69,7 @@ fi
 
 logfile="$srcdir/$ARCHIVE/build.log"
 
-echo "*** patching sources ***" > "$logfile" 2>&1
+echo "*** patching sources ***"
 
 cd "$srcdir/$ARCHIVE"
 
@@ -85,7 +85,7 @@ sed -E 's/\$\(AR\) cru \.libs\/\$@ \$\(SASL_STATIC_OBJS\)/&; \$\(RANLIB\) .libs\
 mv Makefile.in.new Makefile.in
 
 echo "building tools"
-echo "*** generating makemd5 ***" >> "$logfile" 2>&1
+echo "*** generating makemd5 ***"
 
 cd "$srcdir/$ARCHIVE"
 export SDKROOT=
@@ -133,7 +133,7 @@ function build_target {
   
   cd "$srcdir/$ARCHIVE-$TARGET-$MARCH"
   
-  echo "*** building for $TARGET - $MARCH ***" >> "$current_logfile" 2>&1
+  echo "*** building for $TARGET - $MARCH ***"
 
   if [[ $TARGET == "macosx" ]]; then
       local PREFIX=${BUILD_DIR}/${LIB_NAME}/${TARGET}${MARCH}
@@ -242,7 +242,7 @@ fi
 
 cd "$srcdir/$ARCHIVE"
 
-echo "*** creating universal libs ***" >> "$logfile" 2>&1
+echo "*** creating universal libs ***"
 
 rm -rf "$INSTALL_PATH"
 mkdir -p "$INSTALL_PATH"
@@ -272,18 +272,19 @@ for lib in $ALL_LIBS; do
     lipo -create ${LIBS} -output "$output"
 done
 
-echo "*** creating built package ***" >> "$logfile" 2>&1
+echo "*** creating built package ***"
 
 cd "$BUILD_DIR"
-mkdir -p libsasl.bin
-cp -r "$INSTALL_PATH"/* libsasl.bin/
-tar -czf "libsasl-$version-ios.tar.gz" libsasl.bin
-mkdir -p "$resultdir"
-mv "libsasl-$version-ios.tar.gz" "$resultdir"
-cd "$resultdir"
-ln -s "libsasl-$version-ios.tar.gz" "libsasl-prebuilt-ios.tar.gz"
+cp -r "$INSTALL_PATH"/* ./libsasl/
 
-cd "$scriptdir/.."
-tar xzf "$resultdir/libsasl-$version-ios.tar.gz"
+#cp -r "$INSTALL_PATH"/* libsasl.bin/
+#tar -czf "libsasl-$version-ios.tar.gz" libsasl.bin
+#mkdir -p "$resultdir"
+#mv "libsasl-$version-ios.tar.gz" "$resultdir"
+#cd "$resultdir"
+#ln -s "libsasl-$version-ios.tar.gz" "libsasl-prebuilt-ios.tar.gz"
+
+#cd "$scriptdir/.."
+#tar xzf "$resultdir/libsasl-$version-ios.tar.gz"
 
 exit 0
