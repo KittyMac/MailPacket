@@ -14,12 +14,22 @@ void cmailimap_free(void * session) {
     return mailimap_free(session);
 }
 
+char * cimap_response(void * session) {
+    char * msg = ((mailimap *)session)->imap_response;
+    if (msg == NULL) { return msg; }
+    return strdup(msg);
+}
+
 int cmailimap_ssl_connect(void * f, const char * server, uint16_t port) {
     return mailimap_ssl_connect(f, server, port);
 }
 
 int cmailimap_login(void * session, const char * userid, const char * password) {
     return mailimap_login(session, userid, password);
+}
+
+int cmailimap_oauth2_authenticate(void * session, const char * userid, const char * password) {
+    return mailimap_oauth2_authenticate(session, userid, password);
 }
 
 int cmailimap_select(void * session, const char * mb) {

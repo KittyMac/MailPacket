@@ -4,6 +4,20 @@ import Hitch
 import libetpan
 import Sextant
 
+/*
+ // Common error strings defined in mailcore 2 that libetpan can return
+ ErrorGmailIMAPNotEnabled: "not enabled for IMAP use"
+ ErrorGmailIMAPNotEnabled: "IMAP access is disabled"
+ ErrorGmailExceededBandwidthLimit: "bandwidth limits"
+ ErrorGmailTooManySimultaneousConnections: "Too many simultaneous connections"
+ ErrorGmailTooManySimultaneousConnections: "Maximum number of connections"
+ ErrorGmailApplicationSpecificPasswordRequired: "Application-specific password required"
+ ErrorMobileMeMoved: "http://me.com/move"
+ ErrorYahooUnavailable: "OCF12"
+ ErrorOutlookLoginViaWebBrowser: "Login to your account via a web browser"
+ ErrorConnection: "Service temporarily unavailable"
+ */
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -53,6 +67,12 @@ public class IMAP: Actor {
         cmailimap_free(imap)
     }
     
+    private func imapResponse() -> String? {
+        guard let cString = cimap_response(self.imap) else { return nil }
+        let json = Hitch(own: cString)
+        return json.toString()
+    }
+    
     internal func _beGetConnection() -> ConnectionInfo? {
         return unsafeConnectionInfo
     }
@@ -64,12 +84,12 @@ public class IMAP: Actor {
                              _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {
             var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
-            if let error = result.toString() {
+            if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
             
             result = cmailimap_login(self.imap, account, password)
-            if let error = result.toString() {
+            if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
             
@@ -79,7 +99,37 @@ public class IMAP: Actor {
                                                        password: password)
             
             result = cmailimap_select(self.imap, "INBOX")
-            if let error = result.toString() {
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error)
+            }
+            
+            returnCallback(nil)
+        }
+    }
+    
+    internal func _beConnect(domain: String,
+                             port: Int,
+                             account: String,
+                             oauthToken: String,
+                             _ returnCallback: @escaping (String?) -> ()) {
+        queue.addOperation {
+            var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error)
+            }
+            
+            result = cmailimap_oauth2_authenticate(self.imap, account, oauthToken);
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error)
+            }
+            
+            self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
+                                                       port: port,
+                                                       account: account,
+                                                       password: oauthToken)
+            
+            result = cmailimap_select(self.imap, "INBOX")
+            if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
             
@@ -91,7 +141,7 @@ public class IMAP: Actor {
                             _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {
             let result: CError = cmailimap_select(self.imap, folder)
-            if let error = result.toString() {
+            if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
             
