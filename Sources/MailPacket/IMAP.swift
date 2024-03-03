@@ -37,15 +37,18 @@ public struct ConnectionInfo: Codable {
     public let port: Int
     public let account: String
     public let password: String
+    public let oauth2: Bool
     
     public init(domain: String,
                 port: Int,
                 account: String,
-                password: String) {
+                password: String,
+                oauth2: Bool) {
         self.domain = domain
         self.port = port
         self.account = account
         self.password = password
+        self.oauth2 = oauth2
     }
 }
 
@@ -102,7 +105,8 @@ public class IMAP: Actor {
             self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
                                                        port: port,
                                                        account: account,
-                                                       password: password)
+                                                       password: password,
+                                                       oauth2: oauth2)
             
             result = cmailimap_select(self.imap, "INBOX")
             if let error = result.toString(self.imapResponse()) {
