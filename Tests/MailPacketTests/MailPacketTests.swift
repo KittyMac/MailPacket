@@ -18,6 +18,7 @@ final class MailPacketTests: XCTestCase {
                        port: 993,
                        account: account,
                        password: password,
+                       oauth2: false,
                        imap) { error in
             
             XCTAssertNil(error)
@@ -71,7 +72,8 @@ final class MailPacketTests: XCTestCase {
         imap.beConnect(domain: "imap.gmail.com",
                        port: 993,
                        account: "test@gmail.com",
-                       oauthToken: accessToken,
+                       password: accessToken,
+                       oauth2: true,
                        imap) { error in
             
             XCTAssertNil(error)

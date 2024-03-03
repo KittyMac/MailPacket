@@ -81,6 +81,7 @@ public class IMAP: Actor {
                              port: Int,
                              account: String,
                              password: String,
+                             oauth2: Bool,
                              _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {
             var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
@@ -88,7 +89,12 @@ public class IMAP: Actor {
                 return returnCallback(error)
             }
             
-            result = cmailimap_login(self.imap, account, password)
+            if oauth2 {
+                result = cmailimap_oauth2_authenticate(self.imap, account, password);
+            } else {
+                result = cmailimap_login(self.imap, account, password)
+            }
+            
             if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
@@ -97,36 +103,6 @@ public class IMAP: Actor {
                                                        port: port,
                                                        account: account,
                                                        password: password)
-            
-            result = cmailimap_select(self.imap, "INBOX")
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
-        }
-    }
-    
-    internal func _beConnect(domain: String,
-                             port: Int,
-                             account: String,
-                             oauthToken: String,
-                             _ returnCallback: @escaping (String?) -> ()) {
-        queue.addOperation {
-            var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            result = cmailimap_oauth2_authenticate(self.imap, account, oauthToken);
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
-                                                       port: port,
-                                                       account: account,
-                                                       password: oauthToken)
             
             result = cmailimap_select(self.imap, "INBOX")
             if let error = result.toString(self.imapResponse()) {
