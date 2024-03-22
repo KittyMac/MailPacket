@@ -30,7 +30,8 @@ final class MailPacketTests: XCTestCase {
                 imap.beExamine(folder: "[Gmail]/All Mail",
                                imap) { error in
                     
-                    imap.beSearch(after: "2/26/2024".date()!,
+                    imap.beSearch(folder: "INBOX",
+                                  after: "2/26/2024".date()!,
                                   smaller: 1024 * 512,
                                   imap) { error, messageIds in
                         XCTAssertNil(error)
@@ -90,7 +91,8 @@ final class MailPacketTests: XCTestCase {
             
             XCTAssertNil(error)
             
-            imap.beSearch(after: "2/26/2024".date()!,
+            imap.beSearch(folder: "INBOX",
+                          after: "2/26/2024".date()!,
                           smaller: 1024 * 512,
                           imap) { error, messageIds in
                 XCTAssertNil(error)

@@ -151,10 +151,16 @@ public class IMAP: Actor {
         }
     }
     
-    internal func _beSearch(after: Date,
+    internal func _beSearch(folder: String,
+                            after: Date,
                             smaller: Int = 0,
                             _ returnCallback: @escaping (String?, [Int]) -> ()) {
         queue.addOperation {
+            let result: CError = cmailimap_examine(self.imap, folder)
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error, [])
+            }
+
             let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: after)
             guard let day = calendarDate.day,
                   let month = calendarDate.month,
