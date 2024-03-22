@@ -108,7 +108,7 @@ public class IMAP: Actor {
                                                        password: password,
                                                        oauth2: oauth2)
             
-            result = cmailimap_select(self.imap, "INBOX")
+            result = cmailimap_examine(self.imap, "INBOX")
             if let error = result.toString(self.imapResponse()) {
                 return returnCallback(error)
             }
@@ -139,8 +139,19 @@ public class IMAP: Actor {
         }
     }
     
-    internal func _beSearch(folder: String,
-                            after: Date,
+    internal func _beExamine(folder: String,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        queue.addOperation {
+            let result: CError = cmailimap_examine(self.imap, folder)
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error)
+            }
+            
+            returnCallback(nil)
+        }
+    }
+    
+    internal func _beSearch(after: Date,
                             smaller: Int = 0,
                             _ returnCallback: @escaping (String?, [Int]) -> ()) {
         queue.addOperation {

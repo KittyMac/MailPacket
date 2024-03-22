@@ -32,6 +32,10 @@ int cmailimap_oauth2_authenticate(void * session, const char * userid, const cha
     return mailimap_oauth2_authenticate(session, userid, password);
 }
 
+int cmailimap_examine(mailimap * session, const char * mb) {
+    return mailimap_examine(session, mb);
+}
+
 int cmailimap_select(void * session, const char * mb) {
     return mailimap_select(session, mb);
 }
@@ -110,10 +114,7 @@ char * cmailimap_headers(void * session,
     for(int i = 0; i < num; i++) {
         mailimap_set_add_single(uidSet, uids[i]);
     }
-    
-    struct mailimap_section * section;
-    section = mailimap_section_new_text();
-    
+        
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822_header());
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
 
