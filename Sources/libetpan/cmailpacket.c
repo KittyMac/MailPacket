@@ -36,6 +36,28 @@ int cmailimap_select(void * session, const char * mb) {
     return mailimap_select(session, mb);
 }
 
+char * cmailimap_list(mailimap * session) {
+    clist * search_result;
+
+    int result = mailimap_list(session, "", "*", &search_result);
+    if (result != MAILIMAP_NO_ERROR) {
+        return NULL;
+    }
+
+    cJSON * cjson = cJSON_CreateArray();
+    
+    clistiter * cur;
+    for(cur = clist_begin(search_result); cur != NULL; cur = clist_next(cur)) {
+        struct mailimap_mailbox_list * mailbox = clist_content(cur);
+        cJSON_AddItemToArray(cjson, cJSON_CreateString(mailbox->mb_name));
+    }
+    char * json = cJSON_PrintUnformatted(cjson);
+    cJSON_Delete(cjson);
+
+    return json;
+
+}
+
 char * cmailimap_search(void * session,
                         int search_day,
                         int search_month,

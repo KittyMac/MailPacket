@@ -117,6 +117,16 @@ public class IMAP: Actor {
         }
     }
     
+    internal func _beGetFolders(_ returnCallback: @escaping ([String]) -> ()) {
+        queue.addOperation {
+            if let mailboxesUTF8 = cmailimap_list(self.imap) {
+                let json = Hitch(own: mailboxesUTF8)
+                let mailboxes: [String] = json.query("$[*]") ?? []
+                returnCallback(mailboxes)
+            }
+        }
+    }
+    
     internal func _beSelect(folder: String,
                             _ returnCallback: @escaping (String?) -> ()) {
         queue.addOperation {

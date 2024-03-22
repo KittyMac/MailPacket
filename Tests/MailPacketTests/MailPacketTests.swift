@@ -23,38 +23,45 @@ final class MailPacketTests: XCTestCase {
             
             XCTAssertNil(error)
             
-            imap.beSearch(folder: "INBOX",
-                          after: "2/26/2024".date()!,
-                          smaller: 1024 * 512,
-                          imap) { error, messageIds in
-                XCTAssertNil(error)
-                                
-                print(messageIds)
+            imap.beGetFolders(imap) { folders in
                 
-                imap.beHeaders(messageIDs: messageIds, imap) { error, headers in
+                print(folders)
+                
+                imap.beSearch(folder: "[Gmail]/All Mail",
+                              after: "2/26/2024".date()!,
+                              smaller: 1024 * 512,
+                              imap) { error, messageIds in
                     XCTAssertNil(error)
-                    XCTAssertEqual(messageIds.count, headers.count)
+                                    
+                    print(messageIds)
                     
-                    for header in headers {
-                        print("\(header.messageID): \(header.headers.count) header bytes")
-                        //try? header.headers.write(toFile: "/tmp/header\(header.messageID).txt", atomically: false, encoding: .utf8)
-                    }
-                    
-                    imap.beDownload(messageIDs: messageIds, imap) { error, emails in
+                    imap.beHeaders(messageIDs: messageIds, imap) { error, headers in
                         XCTAssertNil(error)
-                        XCTAssertEqual(messageIds.count, emails.count)
+                        XCTAssertEqual(messageIds.count, headers.count)
                         
-                        for email in emails {
-                            print("\(email.messageID): \(email.eml.count) eml bytes")
-                            
-                            try? email.eml.write(toFile: "/tmp/email_\(email.messageID).eml", atomically: false, encoding: .utf8)
+                        for header in headers {
+                            print("\(header.messageID): \(header.headers.count) header bytes")
+                            //try? header.headers.write(toFile: "/tmp/header\(header.messageID).txt", atomically: false, encoding: .utf8)
                         }
                         
-                        expectation.fulfill()
+                        imap.beDownload(messageIDs: messageIds, imap) { error, emails in
+                            XCTAssertNil(error)
+                            XCTAssertEqual(messageIds.count, emails.count)
+                            
+                            for email in emails {
+                                print("\(email.messageID): \(email.eml.count) eml bytes")
+                                
+                                try? email.eml.write(toFile: "/tmp/email_\(email.messageID).eml", atomically: false, encoding: .utf8)
+                            }
+                            
+                            expectation.fulfill()
+                        }
                     }
+                    
                 }
-                
             }
+            
+            
         }
         
         wait(for: [expectation], timeout: 10)

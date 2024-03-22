@@ -15,6 +15,7 @@ extern int cmailimap_ssl_connect(void * f, const char * server, uint16_t port);
 extern int cmailimap_oauth2_authenticate(void * session, const char * userid, const char * password);
 extern int cmailimap_login(void * session, const char * userid, const char * password);
 extern int cmailimap_select(void * session, const char * mb);
+extern char * cmailimap_list(void * session);
 extern char * cmailimap_search(void * session,
                                int search_day,
                                int search_month,
