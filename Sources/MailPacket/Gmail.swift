@@ -124,7 +124,7 @@ public class Gmail: Actor {
                 if let error = error {
                     return returnCallback(error)
                 }
-                guard let response = response else {
+                guard let _ = response else {
                     return returnCallback(error ?? "Unknown error")
                 }
                 returnCallback(nil)
@@ -227,6 +227,67 @@ public class Gmail: Actor {
         
         group.notify(actor: self) {
             return returnCallback(anyError, allHeaders)
+        }
+    }
+    
+    internal func _beDownload(messageIDs: [String],
+                              _ returnCallback: @escaping (String?, [Email]) -> ()) {
+        let group = DispatchGroup()
+        var anyError: String? = nil
+        var allEmails: [Email] = []
+        
+        for messageID in messageIDs {
+            
+            group.enter()
+            HTTPSessionManager.shared.beNew(priority: .high,
+                                            self) { session in
+                session.beRequest(url: "https://gmail.googleapis.com/gmail/v1/users/me/messages/\(messageID)",
+                                  httpMethod: "GET",
+                                  params: [
+                                    "format": "raw"
+                                  ],
+                                  headers: [
+                                    "Authorization": "Bearer \(self.token)"
+                                  ],
+                                  cookies: nil,
+                                  timeoutRetry: nil,
+                                  proxy: nil,
+                                  body: nil,
+                                  self) { response, httpResponse, error in
+                    defer { group.leave() }
+                    
+                    if let error = error, anyError == nil {
+                        anyError = error
+                    }
+                    guard let response = response else {
+                        anyError = "empty response without error"
+                        return
+                    }
+                    
+                    let json = Hitch(data: response)
+                    guard let base64UrlEncoded = json.query(hitch: "$..raw") else {
+                        anyError = "raw is missing from response"
+                        return
+                    }
+                        
+                    base64UrlEncoded.replace(occurencesOf: "-", with: "+")
+                    base64UrlEncoded.replace(occurencesOf: "_", with: "/")
+                    
+                    guard let data = base64UrlEncoded.base64Decoded() else {
+                        anyError = "failed decode raw"
+                        return
+                    }
+                    
+                    allEmails.append(
+                        Email(messageID: messageID,
+                              eml: Hitch(data: data).toString())
+                    )
+                }
+            }
+        }
+        
+        group.notify(actor: self) {
+            return returnCallback(anyError, allEmails)
         }
     }
 }

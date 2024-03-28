@@ -63,14 +63,9 @@ final class MailPacketTests: XCTestCase {
                                 expectation.fulfill()
                             }
                         }
-                        
                     }
                 }
-                
-                
             }
-            
-            
         }
         
         wait(for: [expectation], timeout: 10)
@@ -100,40 +95,7 @@ final class MailPacketTests: XCTestCase {
                     XCTAssertNil(error)
                     XCTAssertEqual(messageIds.count, headers.count)
                     
-                    expectation.fulfill()
-                }
-            }
-        }
-        
-        
-        /*
-        imap.beConnect(domain: "imap.gmail.com",
-                       port: 993,
-                       account: "test@gmail.com",
-                       password: accessToken,
-                       oauth2: true,
-                       imap) { error in
-            
-            XCTAssertNil(error)
-            
-            imap.beSearch(folder: "INBOX",
-                          after: "2/26/2024".date()!,
-                          smaller: 1024 * 512,
-                          imap) { error, messageIds in
-                XCTAssertNil(error)
-                                
-                print(messageIds)
-                
-                imap.beHeaders(messageIDs: messageIds, imap) { error, headers in
-                    XCTAssertNil(error)
-                    XCTAssertEqual(messageIds.count, headers.count)
-                    
-                    for header in headers {
-                        print("\(header.messageID): \(header.headers.count) header bytes")
-                        //try? header.headers.write(toFile: "/tmp/header\(header.messageID).txt", atomically: false, encoding: .utf8)
-                    }
-                    
-                    imap.beDownload(messageIDs: messageIds, imap) { error, emails in
+                    gmail.beDownload(messageIDs: messageIds, gmail) { error, emails in
                         XCTAssertNil(error)
                         XCTAssertEqual(messageIds.count, emails.count)
                         
@@ -145,11 +107,11 @@ final class MailPacketTests: XCTestCase {
                         
                         expectation.fulfill()
                     }
+                    
                 }
-                
             }
         }
-        */
+        
         wait(for: [expectation], timeout: 10)
     }
 }
