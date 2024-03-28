@@ -101,7 +101,13 @@ public class Gmail: Actor {
         }
     }
     
+    public var unsafeConnectionInfo: ConnectionInfo?
+    
     private var token: String = ""
+    
+    internal func _beGetConnection() -> ConnectionInfo? {
+        return unsafeConnectionInfo
+    }
     
     internal func _beConnect(oauth2: String,
                              _ returnCallback: @escaping (String?) -> ()) {
@@ -127,6 +133,9 @@ public class Gmail: Actor {
                 guard let _ = response else {
                     return returnCallback(error ?? "Unknown error")
                 }
+                
+                self.unsafeConnectionInfo = ConnectionInfo(oauth2: oauth2)
+                
                 returnCallback(nil)
             }
         }
