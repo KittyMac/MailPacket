@@ -119,9 +119,15 @@ public class Gmail: Actor {
 
     public struct ConnectionInfo: Codable {
         public let oauth2: String
+        public let concurrency: Int
+        public let speedLimit: Double
         
-        public init(oauth2: String) {
+        public init(oauth2: String,
+                    concurrency: Int,
+                    speedLimit: Double) {
             self.oauth2 = oauth2
+            self.concurrency = concurrency
+            self.speedLimit = speedLimit
         }
     }
     
@@ -206,7 +212,9 @@ public class Gmail: Actor {
                     return returnCallback(error ?? "Unknown error")
                 }
                 
-                self.unsafeConnectionInfo = ConnectionInfo(oauth2: oauth2)
+                self.unsafeConnectionInfo = ConnectionInfo(oauth2: oauth2,
+                                                           concurrency: concurrency,
+                                                           speedLimit: speedLimit)
                 
                 returnCallback(nil)
             }
