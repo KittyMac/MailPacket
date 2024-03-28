@@ -85,7 +85,7 @@ import FoundationNetworking
 public class Gmail: Actor {
     public struct Header: Codable {
         public let messageID: String
-        public let headers: [String: String]
+        public let headers: String
     }
 
     public struct Email: Codable {
@@ -217,9 +217,19 @@ public class Gmail: Actor {
                         }
                     }
                     
+                    let header = Hitch(capacity: 1024)
+                    for (key, value) in headers {
+                        header.append(key)
+                        header.append(.colon)
+                        header.append(.space)
+                        header.append(value)
+                        header.append(.newLine)
+                    }
+                    header.append(.newLine)
+                    
                     allHeaders.append(
                         Header(messageID: messageID,
-                               headers: headers)
+                               headers: header.toString())
                     )
                 }
             }
