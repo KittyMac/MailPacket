@@ -87,7 +87,22 @@ final class MailPacketTests: XCTestCase {
         // Use something like https://github.com/openid/AppAuth-iOS to sign in and get an access token
         gmail.beConnect(oauth2: gmailToken,
                         gmail)  { error in
-            
+            XCTAssertNil(error)
+
+            gmail.beSearch(after: "2/26/2024".date()!,
+                           smaller: 1024 * 512,
+                           gmail) { error, messageIds in
+                XCTAssertNil(error)
+                
+                print(messageIds)
+                
+                gmail.beHeaders(messageIDs: messageIds, gmail) { error, headers in
+                    XCTAssertNil(error)
+                    XCTAssertEqual(messageIds.count, headers.count)
+                    
+                    expectation.fulfill()
+                }
+            }
         }
         
         
