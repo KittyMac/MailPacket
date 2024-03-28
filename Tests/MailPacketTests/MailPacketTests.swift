@@ -81,10 +81,12 @@ final class MailPacketTests: XCTestCase {
         // Set up app on google: https://console.cloud.google.com
         // Use something like https://github.com/openid/AppAuth-iOS to sign in and get an access token
         gmail.beConnect(oauth2: gmailToken,
+                        concurrency: 16,
+                        speedLimit: 0.2,
                         gmail)  { error in
             XCTAssertNil(error)
 
-            gmail.beSearch(after: "2/26/2024".date()!,
+            gmail.beSearch(after: "1/1/2019".date()!,
                            smaller: 1024 * 512,
                            gmail) { error, messageIds in
                 XCTAssertNil(error)
@@ -112,6 +114,6 @@ final class MailPacketTests: XCTestCase {
             }
         }
         
-        wait(for: [expectation], timeout: 10)
+        wait(for: [expectation], timeout: 120)
     }
 }

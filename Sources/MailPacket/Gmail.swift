@@ -80,6 +80,30 @@ import FoundationNetworking
  }
  */
 
+typealias DownloaderCallback = (HTTPSession, @escaping () -> ()) -> ()
+
+class GmailDownloader: Actor {
+    private var lastPerformDate = Date.distantPast
+    private var speedLimit: Double
+
+    var unsafeIsSpeedLimited: Bool {
+        let timeSpentSoFar = abs(lastPerformDate.timeIntervalSinceNow)
+        return timeSpentSoFar < speedLimit
+    }
+    
+    init(speedLimit: Double) {
+        self.speedLimit = speedLimit
+    }
+    
+    internal func _bePerform(_ performBlock: @escaping DownloaderCallback,
+                             _ returnCallback: @escaping () -> ()) {
+        HTTPSessionManager.shared.beNew(priority: .high,
+                                        self) { session in
+            self.lastPerformDate = Date()
+            performBlock(session, returnCallback)
+        }
+    }
+}
 
 
 public class Gmail: Actor {
@@ -105,17 +129,63 @@ public class Gmail: Actor {
     
     private var token: String = ""
     
+    private var activeDownloaders: [GmailDownloader] = []
+    private var freeDownloaders: [GmailDownloader] = []
+    private var requestQueue: [DownloaderCallback] = []
+    
+    public override init() {
+        super.init()
+        
+        Flynn.Timer(timeInterval: 0.01, immediate: false, repeats: true, self) { [weak self] timer in
+            self?.nextRequest()
+        }
+    }
+    
+    private func scheduleRequest(_ callback: @escaping DownloaderCallback) {
+        requestQueue.append(callback)
+        nextRequest()
+    }
+    
+    private func nextRequest() {
+        // print("requests: \(requestQueue.count)  free: \(freeDownloaders.count)   active: \(activeDownloaders.count)")
+        
+        guard requestQueue.isEmpty == false else { return }
+        guard freeDownloaders.isEmpty == false else { return }
+        guard freeDownloaders[0].unsafeIsSpeedLimited == false else {
+            return
+        }
+        
+        let downloader = freeDownloaders.removeFirst()
+        let request = requestQueue.removeFirst()
+        
+        downloader.bePerform(request,
+                             self) {
+            self.activeDownloaders = self.activeDownloaders.filter { $0 != downloader }
+            self.freeDownloaders.append(downloader)
+            
+            self.nextRequest()
+        }
+        
+        activeDownloaders.append(downloader)
+    }
+    
     internal func _beGetConnection() -> ConnectionInfo? {
         return unsafeConnectionInfo
     }
     
     internal func _beConnect(oauth2: String,
+                             concurrency: Int,
+                             speedLimit: Double,
                              _ returnCallback: @escaping (String?) -> ()) {
         token = oauth2
         
-        HTTPSessionManager.shared.beNew(priority: .high,
-                                        self) { session in
-            
+        for _ in 0..<concurrency {
+            freeDownloaders.append(
+                GmailDownloader(speedLimit: speedLimit)
+            )
+        }
+        
+        scheduleRequest { session, finishedCallback in
             session.beRequest(url: "https://gmail.googleapis.com/gmail/v1/users/me/profile",
                               httpMethod: "GET",
                               params: [:],
@@ -127,6 +197,8 @@ public class Gmail: Actor {
                               proxy: nil,
                               body: nil,
                               self) { response, httpResponse, error in
+                defer { finishedCallback() }
+                
                 if let error = error {
                     return returnCallback(error)
                 }
@@ -144,16 +216,31 @@ public class Gmail: Actor {
     internal func _beSearch(after: Date,
                             smaller: Int = 0,
                             _ returnCallback: @escaping (String?, [String]) -> ()) {
+        performSearch(after: after,
+                      smaller: smaller,
+                      nextPageToken: nil,
+                      results: [],
+                      returnCallback)
+    }
+    
+    private func performSearch(after: Date,
+                               smaller: Int,
+                               nextPageToken: String?,
+                               results: Set<String>,
+                               _ returnCallback: @escaping (String?, [String]) -> ()) {
         
-        HTTPSessionManager.shared.beNew(priority: .high,
-                                        self) { session in
-            
+        scheduleRequest { session, finishedCallback in
+            var params = [
+                "maxResults": "500",
+            ]
+            if let nextPageToken = nextPageToken {
+                params["pageToken"] = nextPageToken
+            } else {
+                params["q"] = "in:anywhere -in:drafts smaller_than:\(smaller / 1024)KB after:\(Int(after.timeIntervalSince1970))"
+            }
             session.beRequest(url: "https://www.googleapis.com/gmail/v1/users/me/messages",
                               httpMethod: "GET",
-                              params: [
-                                "maxResults": "500",
-                                "q": "in:anywhere -in:drafts smaller_than:\(smaller / 1024)KB after:\(Int(after.timeIntervalSince1970))"
-                              ],
+                              params: params,
                               headers: [
                                 "Authorization": "Bearer \(self.token)"
                               ],
@@ -162,6 +249,8 @@ public class Gmail: Actor {
                               proxy: nil,
                               body: nil,
                               self) { response, httpResponse, error in
+                defer { finishedCallback() }
+                
                 if let error = error {
                     return returnCallback(error, [])
                 }
@@ -171,7 +260,26 @@ public class Gmail: Actor {
                 
                 let json = Hitch(data: response)
                 let messageIDs: [String] = json.query("$.messages[*].id") ?? []
-                return returnCallback(nil, messageIDs)
+                
+                var localResults = results
+                for messageID in messageIDs {
+                    localResults.insert(messageID)
+                }
+                
+                guard localResults.count == results.count + messageIDs.count else {
+                    return returnCallback("duplicate messageIds returned", messageIDs)
+                }
+                
+                if let nextPageToken: String = json.query("$.nextPageToken") {
+                    return self.performSearch(after: after,
+                                              smaller: smaller,
+                                              nextPageToken: nextPageToken,
+                                              results: localResults,
+                                              returnCallback)
+                    
+                }
+                
+                return returnCallback(nil, Array(localResults))
             }
         }
     }
@@ -186,8 +294,7 @@ public class Gmail: Actor {
         for messageID in messageIDs {
             
             group.enter()
-            HTTPSessionManager.shared.beNew(priority: .high,
-                                            self) { session in
+            scheduleRequest { session, finishedCallback in
                 session.beRequest(url: "https://gmail.googleapis.com/gmail/v1/users/me/messages/\(messageID)",
                                   httpMethod: "GET",
                                   params: [
@@ -201,7 +308,7 @@ public class Gmail: Actor {
                                   proxy: nil,
                                   body: nil,
                                   self) { response, httpResponse, error in
-                    defer { group.leave() }
+                    defer { finishedCallback(); group.leave() }
                     
                     if let error = error, anyError == nil {
                         anyError = error
@@ -258,8 +365,7 @@ public class Gmail: Actor {
         for messageID in messageIDs {
             
             group.enter()
-            HTTPSessionManager.shared.beNew(priority: .high,
-                                            self) { session in
+            scheduleRequest { session, finishedCallback in
                 session.beRequest(url: "https://gmail.googleapis.com/gmail/v1/users/me/messages/\(messageID)",
                                   httpMethod: "GET",
                                   params: [
@@ -273,22 +379,26 @@ public class Gmail: Actor {
                                   proxy: nil,
                                   body: nil,
                                   self) { response, httpResponse, error in
-                    defer { group.leave() }
+                    defer { finishedCallback(); group.leave() }
                     
                     if let error = error, anyError == nil {
                         anyError = error
+                        return
                     }
                     guard let response = response else {
                         anyError = "empty response without error"
                         return
                     }
                     
+                    // defaultPerMinutePerUser: 15000
+                    // 250 quota units per user per second, moving average (allows short bursts).
+                    
                     let json = Hitch(data: response)
                     guard let base64UrlEncoded = json.query(hitch: "$..raw") else {
                         anyError = "raw is missing from response"
                         return
                     }
-                        
+                    
                     base64UrlEncoded.replace(occurencesOf: "-", with: "+")
                     base64UrlEncoded.replace(occurencesOf: "_", with: "/")
                     
