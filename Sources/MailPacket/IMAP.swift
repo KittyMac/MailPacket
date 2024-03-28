@@ -22,37 +22,37 @@ import Sextant
 import FoundationNetworking
 #endif
 
-public struct Header: Codable {
-    public let messageID: Int
-    public let headers: String
-}
-
-public struct Email: Codable {
-    public let messageID: Int
-    public let eml: String
-}
-
-public struct ConnectionInfo: Codable {
-    public let domain: String
-    public let port: Int
-    public let account: String
-    public let password: String
-    public let oauth2: Bool
-    
-    public init(domain: String,
-                port: Int,
-                account: String,
-                password: String,
-                oauth2: Bool) {
-        self.domain = domain
-        self.port = port
-        self.account = account
-        self.password = password
-        self.oauth2 = oauth2
-    }
-}
-
 public class IMAP: Actor {
+    public struct Header: Codable {
+        public let messageID: Int
+        public let headers: String
+    }
+
+    public struct Email: Codable {
+        public let messageID: Int
+        public let eml: String
+    }
+
+    public struct ConnectionInfo: Codable {
+        public let domain: String
+        public let port: Int
+        public let account: String
+        public let password: String
+        public let oauth2: Bool
+        
+        public init(domain: String,
+                    port: Int,
+                    account: String,
+                    password: String,
+                    oauth2: Bool) {
+            self.domain = domain
+            self.port = port
+            self.account = account
+            self.password = password
+            self.oauth2 = oauth2
+        }
+    }
+    
     private let queue: OperationQueue
 
     private let imap: UnsafeMutableRawPointer?

@@ -24,6 +24,7 @@ let package = Package(
         .package(url: "https://github.com/KittyMac/Studding.git", from: "0.0.1"),
         .package(url: "https://github.com/KittyMac/Spanker.git", from: "0.2.0"),
         .package(url: "https://github.com/KittyMac/Sextant.git", from: "0.4.0"),
+        .package(url: "https://github.com/KittyMac/Picaroon.git", from: "0.4.0"),
     ],
     targets: [
         .target(
@@ -34,7 +35,8 @@ let package = Package(
                 "Spanker",
                 "Studding",
                 "Sextant",
-                "libetpan"
+                "libetpan",
+                "Picaroon"
 			],
             plugins: [
                 .plugin(name: "FlynnPlugin", package: "Flynn")

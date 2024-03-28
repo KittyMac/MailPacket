@@ -5,19 +5,22 @@ import Studding
 
 import MailPacket
 
-fileprivate let account = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_username.txt")
-fileprivate let password = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/imap_password.txt")
+fileprivate let imapAccount = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_username.txt")
+fileprivate let imapPassword = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_password.txt")
+
+fileprivate let gmailAccount = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2_username.txt")
+fileprivate let gmailToken = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2_token.txt")
 
 final class MailPacketTests: XCTestCase {
-    func testIMAPSearch0() {
+    func testIMAP0() {
         let expectation = XCTestExpectation(description: #function)
 
         let imap = IMAP()
         
         imap.beConnect(domain: "imap.gmail.com",
                        port: 993,
-                       account: account,
-                       password: password,
+                       account: imapAccount,
+                       password: imapPassword,
                        oauth2: false,
                        imap) { error in
             
@@ -73,15 +76,22 @@ final class MailPacketTests: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
     
-    // ya29.a0AfB_byCErIjUYTOWB8XhvAKWfdJghC4hKV8SQBb4EHkyHrczB5P0kbP5Dl3D3Le_MtXPofjDHFqtWJ9iT68nu1hBseSkh1Y4vqOWTFmkl3WqnkubecVfGR3JyvRU-IGWNI92yf2NBaZxNJwfcyAxpxEuz7c0dmH2Y7pAaCgYKAVoSARISFQHGX2Mipwf2noeoAhGmKRYJaV1UWw0171
-    func testOAuthSearch0() {
+    func testGmail0() {
         let expectation = XCTestExpectation(description: #function)
 
-        let imap = IMAP()
+        let gmail = Gmail()
         
-        // https://developers.google.com/oauthplayground
-        let accessToken = "ya29.a0AfB_byCErIjUYTOWB8XhvAKWfdJghC4hKV8SQBb4EHkyHrczB5P0kbP5Dl3D3Le_MtXPofjDHFqtWJ9iT68nu1hBseSkh1Y4vqOWTFmkl3WqnkubecVfGR3JyvRU-IGWNI92yf2NBaZxNJwfcyAxpxEuz7c0dmH2Y7pAaCgYKAVoSARISFQHGX2Mipwf2noeoAhGmKRYJaV1UWw0171"
+        // Requires OAUTH2 token with appropriate scopes.
+        // "https://www.googleapis.com/auth/gmail.readonly" is good scope to start with
+        // Set up app on google: https://console.cloud.google.com
+        // Use something like https://github.com/openid/AppAuth-iOS to sign in and get an access token
+        gmail.beConnect(oauth2: gmailToken,
+                        gmail)  { error in
+            
+        }
         
+        
+        /*
         imap.beConnect(domain: "imap.gmail.com",
                        port: 993,
                        account: "test@gmail.com",
@@ -124,7 +134,7 @@ final class MailPacketTests: XCTestCase {
                 
             }
         }
-        
+        */
         wait(for: [expectation], timeout: 10)
     }
 }
