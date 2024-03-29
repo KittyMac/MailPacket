@@ -146,13 +146,16 @@ public class Gmail: Actor {
         public let accessToken: String
         public let concurrency: Int
         public let speedLimit: Double
+        public let tokenRefresh: TokenRefresh?
         
         public init(accessToken: String,
                     concurrency: Int,
-                    speedLimit: Double) {
+                    speedLimit: Double,
+                    tokenRefresh: TokenRefresh?) {
             self.accessToken = accessToken
             self.concurrency = concurrency
             self.speedLimit = speedLimit
+            self.tokenRefresh = tokenRefresh
         }
     }
     
@@ -284,7 +287,8 @@ public class Gmail: Actor {
                 
                 self.unsafeConnectionInfo = ConnectionInfo(accessToken: accessToken,
                                                            concurrency: concurrency,
-                                                           speedLimit: speedLimit)
+                                                           speedLimit: speedLimit,
+                                                           tokenRefresh: tokenRefresh)
                 
                 returnCallback(nil)
             }

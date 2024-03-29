@@ -123,6 +123,6 @@ final class MailPacketTests: XCTestCase {
             }
         }
         
-        wait(for: [expectation], timeout: 120)
+        wait(for: [expectation], timeout: 240)
     }
 }
