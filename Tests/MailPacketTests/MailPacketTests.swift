@@ -1,15 +1,14 @@
 import XCTest
 import Hitch
 import Flynn
-import Studding
+import Spanker
 
 import MailPacket
 
 fileprivate let imapAccount = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_username.txt")
 fileprivate let imapPassword = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_password.txt")
 
-fileprivate let gmailAccount = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2_username.txt")
-fileprivate let gmailToken = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2_token.txt")
+fileprivate let gmailAccount = Spanker.parse(halfhitch: Hitch(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2.json")!.halfhitch())!
 
 final class MailPacketTests: XCTestCase {
     func testIMAP0() {
@@ -76,13 +75,23 @@ final class MailPacketTests: XCTestCase {
 
         let gmail = Gmail()
         
+        let accessToken = gmailAccount[string: "accessToken"]!
+        let refreshToken = gmailAccount[string: "refreshToken"]!
+        let clientId = gmailAccount[string: "clientId"]!
+        let clientSecret = gmailAccount[string: "clientSecret"]!
+        
+        let tokenRefresh = Gmail.TokenRefresh(clientId: clientId,
+                                              clientSecret: clientSecret,
+                                              refreshToken: refreshToken)
+        
         // Requires OAUTH2 token with appropriate scopes.
         // "https://www.googleapis.com/auth/gmail.readonly" is good scope to start with
         // Set up app on google: https://console.cloud.google.com
         // Use something like https://github.com/openid/AppAuth-iOS to sign in and get an access token
-        gmail.beConnect(oauth2: gmailToken,
+        gmail.beConnect(oauth2: accessToken,
+                        tokenRefresh: tokenRefresh,
                         concurrency: 16,
-                        speedLimit: 0.2,
+                        speedLimit: 0.6,
                         gmail)  { error in
             XCTAssertNil(error)
 

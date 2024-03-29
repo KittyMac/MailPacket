@@ -30,6 +30,16 @@ import FoundationNetworking
  */
 
 /*
+ {
+   "access_token": "...",
+   "expires_in": 3599,
+   "scope": "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.profile openid",
+   "token_type": "Bearer",
+   "id_token": "..."
+ }
+ */
+
+/*
  // https://gmail.googleapis.com/gmail/v1/users/me/profile
  {
    "emailAddress": "email@gmail.com",
@@ -80,6 +90,7 @@ import FoundationNetworking
  }
  */
 
+typealias TokenRefreshCallback = (String?) -> ()
 typealias DownloaderCallback = (HTTPSession, @escaping () -> ()) -> ()
 
 class GmailDownloader: Actor {
@@ -116,16 +127,30 @@ public class Gmail: Actor {
         public let messageID: String
         public let eml: String
     }
+    
+    public struct TokenRefresh: Codable {
+        public let clientId: String
+        public let clientSecret: String
+        public let refreshToken: String
+        
+        public init(clientId: String,
+                    clientSecret: String,
+                    refreshToken: String) {
+            self.clientId = clientId
+            self.clientSecret = clientSecret
+            self.refreshToken = refreshToken
+        }
+    }
 
     public struct ConnectionInfo: Codable {
-        public let oauth2: String
+        public let accessToken: String
         public let concurrency: Int
         public let speedLimit: Double
         
-        public init(oauth2: String,
+        public init(accessToken: String,
                     concurrency: Int,
                     speedLimit: Double) {
-            self.oauth2 = oauth2
+            self.accessToken = accessToken
             self.concurrency = concurrency
             self.speedLimit = speedLimit
         }
@@ -133,7 +158,9 @@ public class Gmail: Actor {
     
     public var unsafeConnectionInfo: ConnectionInfo?
     
-    private var token: String = ""
+    private var accessToken: String = ""
+    private var tokenRefresh: TokenRefresh?
+    private var tokenExpiry: Date = Date.distantFuture
     
     private var activeDownloaders: [GmailDownloader] = []
     private var freeDownloaders: [GmailDownloader] = []
@@ -144,6 +171,45 @@ public class Gmail: Actor {
         
         Flynn.Timer(timeInterval: 0.01, immediate: false, repeats: true, self) { [weak self] timer in
             self?.nextRequest()
+        }
+    }
+    
+    private func refreshToken(_ callback: @escaping TokenRefreshCallback) {
+        guard let tokenRefresh = tokenRefresh else { return callback(nil) }
+        guard abs(tokenExpiry.timeIntervalSinceNow) < 60 * 5 else { return callback(nil) }
+        
+        HTTPSession.oneshot.beRequest(url: "https://oauth2.googleapis.com/token",
+                                      httpMethod: "POST",
+                                      params: [
+                                        "client_id": tokenRefresh.clientId,
+                                        "client_secret": tokenRefresh.clientSecret,
+                                        "refresh_token": tokenRefresh.refreshToken,
+                                        "grant_type": "refresh_token",
+                                      ],
+                                      headers: [
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                      ],
+                                      cookies: nil,
+                                      timeoutRetry: nil,
+                                      proxy: nil,
+                                      body: nil,
+                                      self) { response, httpResponse, error in
+            if let error = error {
+                return callback(error)
+            }
+            guard let response = response else {
+                return callback(error ?? "Unknown error")
+            }
+            
+
+            let json = Hitch(data: response)
+            guard let newAccessToken: String = json.query("$.access_token") else { return callback("token refresh missing access_token") }
+            guard let expiresIn: Double = json.query("$.expires_in") else { return callback("token refresh missing expires_in") }
+
+            self.accessToken = newAccessToken
+            self.tokenExpiry = Date(timeIntervalSinceNow: expiresIn)
+            
+            callback(nil)
         }
     }
     
@@ -164,26 +230,30 @@ public class Gmail: Actor {
         let downloader = freeDownloaders.removeFirst()
         let request = requestQueue.removeFirst()
         
-        downloader.bePerform(request,
-                             self) {
-            self.activeDownloaders = self.activeDownloaders.filter { $0 != downloader }
-            self.freeDownloaders.append(downloader)
-            
-            self.nextRequest()
+        refreshToken { error in
+            downloader.bePerform(request,
+                                 self) {
+                self.activeDownloaders = self.activeDownloaders.filter { $0 != downloader }
+                self.freeDownloaders.append(downloader)
+                
+                self.nextRequest()
+            }
+            self.activeDownloaders.append(downloader)
         }
-        
-        activeDownloaders.append(downloader)
     }
     
     internal func _beGetConnection() -> ConnectionInfo? {
         return unsafeConnectionInfo
     }
     
-    internal func _beConnect(oauth2: String,
+    internal func _beConnect(oauth2 accessToken: String,
+                             tokenRefresh: TokenRefresh?,
                              concurrency: Int,
                              speedLimit: Double,
                              _ returnCallback: @escaping (String?) -> ()) {
-        token = oauth2
+        self.accessToken = accessToken
+        self.tokenRefresh = tokenRefresh
+        self.tokenExpiry = Date()
         
         for _ in 0..<concurrency {
             freeDownloaders.append(
@@ -196,7 +266,7 @@ public class Gmail: Actor {
                               httpMethod: "GET",
                               params: [:],
                               headers: [
-                                "Authorization": "Bearer \(self.token)"
+                                "Authorization": "Bearer \(self.accessToken)"
                               ],
                               cookies: nil,
                               timeoutRetry: nil,
@@ -212,7 +282,7 @@ public class Gmail: Actor {
                     return returnCallback(error ?? "Unknown error")
                 }
                 
-                self.unsafeConnectionInfo = ConnectionInfo(oauth2: oauth2,
+                self.unsafeConnectionInfo = ConnectionInfo(accessToken: accessToken,
                                                            concurrency: concurrency,
                                                            speedLimit: speedLimit)
                 
@@ -250,7 +320,7 @@ public class Gmail: Actor {
                               httpMethod: "GET",
                               params: params,
                               headers: [
-                                "Authorization": "Bearer \(self.token)"
+                                "Authorization": "Bearer \(self.accessToken)"
                               ],
                               cookies: nil,
                               timeoutRetry: nil,
@@ -309,7 +379,7 @@ public class Gmail: Actor {
                                     "format": "metadata"
                                   ],
                                   headers: [
-                                    "Authorization": "Bearer \(self.token)"
+                                    "Authorization": "Bearer \(self.accessToken)"
                                   ],
                                   cookies: nil,
                                   timeoutRetry: nil,
@@ -380,7 +450,7 @@ public class Gmail: Actor {
                                     "format": "raw"
                                   ],
                                   headers: [
-                                    "Authorization": "Bearer \(self.token)"
+                                    "Authorization": "Bearer \(self.accessToken)"
                                   ],
                                   cookies: nil,
                                   timeoutRetry: nil,
