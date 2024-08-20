@@ -245,6 +245,11 @@ public class Gmail: Actor {
         }
     }
     
+    internal func _beClose(_ returnCallback: @escaping () -> ()) {
+        // TODO: stub for completeness
+        returnCallback()
+    }
+    
     internal func _beGetConnection() -> ConnectionInfo? {
         return unsafeConnectionInfo
     }

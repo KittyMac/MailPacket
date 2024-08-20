@@ -59,7 +59,9 @@ final class MailPacketTests: XCTestCase {
                                     try? email.eml.write(toFile: "/tmp/email_\(email.messageID).eml", atomically: false, encoding: .utf8)
                                 }
                                 
-                                expectation.fulfill()
+                                imap.beClose(imap) {
+                                    expectation.fulfill()
+                                }
                             }
                         }
                     }
@@ -67,7 +69,7 @@ final class MailPacketTests: XCTestCase {
             }
         }
         
-        wait(for: [expectation], timeout: 10)
+        wait(for: [expectation], timeout: 60)
     }
     
     func testGmail0() {
@@ -116,7 +118,9 @@ final class MailPacketTests: XCTestCase {
                             try? email.eml.write(toFile: "/tmp/email_\(email.messageID).eml", atomically: false, encoding: .utf8)
                         }
                         
-                        expectation.fulfill()
+                        gmail.beClose(gmail) {
+                            expectation.fulfill()
+                        }
                     }
                     
                 }

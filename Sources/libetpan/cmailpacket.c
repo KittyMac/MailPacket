@@ -14,6 +14,10 @@ void cmailimap_free(void * session) {
     return mailimap_free(session);
 }
 
+int cmailimap_logout(void * session) {
+    mailimap_logout(session);
+}
+
 char * cimap_response(void * session) {
     char * msg = ((mailimap *)session)->imap_response;
     if (msg == NULL) { return msg; }

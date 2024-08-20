@@ -76,6 +76,11 @@ public class IMAP: Actor {
         return json.toString()
     }
     
+    internal func _beClose(_ returnCallback: @escaping () -> ()) {
+        cmailimap_logout(imap)
+        returnCallback()
+    }
+    
     internal func _beGetConnection() -> ConnectionInfo? {
         return unsafeConnectionInfo
     }
