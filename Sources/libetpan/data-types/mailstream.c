@@ -277,6 +277,9 @@ void mailstream_set_low(mailstream * s, mailstream_low * low)
 LIBETPAN_EXPORT
 int mailstream_close(mailstream * s)
 {
+  if (s == NULL) {
+      return 0;
+  }
   if (s->idle != NULL) {
     mailstream_cancel_free(s->idle);
   }
