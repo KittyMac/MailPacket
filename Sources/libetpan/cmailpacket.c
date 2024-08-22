@@ -6,6 +6,8 @@
 #include "mailimap.h"
 #include "cJSON.h"
 
+char * cmail_error_string(int result);
+
 void * cmailimap_new() {
     return mailimap_new(0, NULL);
 }
@@ -48,8 +50,8 @@ char * cmailimap_list(mailimap * session) {
     clist * search_result;
 
     int result = mailimap_list(session, "", "*", &search_result);
-    if (result != MAILIMAP_NO_ERROR) {
-        return NULL;
+    if (result >= MAILIMAP_ERROR_BAD_STATE) {
+        return cmail_error_string(result);
     }
 
     cJSON * cjson = cJSON_CreateArray();
@@ -88,8 +90,8 @@ char * cmailimap_search(void * session,
     
     mailimap_search_key_free(search_key);
     
-    if (result != MAILIMAP_NO_ERROR) {
-        return NULL;
+    if (result >= MAILIMAP_ERROR_BAD_STATE) {
+        return cmail_error_string(result);
     }
     
     cJSON * cjson = cJSON_CreateArray();
@@ -124,8 +126,8 @@ char * cmailimap_headers(void * session,
 
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
-    if (result != MAILIMAP_NO_ERROR) {
-        return NULL;
+    if (result >= MAILIMAP_ERROR_BAD_STATE) {
+        return cmail_error_string(result);
     }
     
     
@@ -181,8 +183,8 @@ char * cmailimap_download(void * session,
 
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
-    if (result != MAILIMAP_NO_ERROR) {
-        return NULL;
+    if (result >= MAILIMAP_ERROR_BAD_STATE) {
+        return cmail_error_string(result);
     }
     
     
@@ -218,4 +220,55 @@ char * cmailimap_download(void * session,
     mailimap_fetch_list_free(fetch_result);
 
     return json;
+}
+
+char * cmail_error_string(int result) {
+    switch (result) {
+        case MAILIMAP_ERROR_BAD_STATE: return "MAILIMAP_ERROR_BAD_STATE";
+        case MAILIMAP_ERROR_STREAM: return "MAILIMAP_ERROR_STREAM";
+        case MAILIMAP_ERROR_PARSE: return "MAILIMAP_ERROR_PARSE";
+        case MAILIMAP_ERROR_CONNECTION_REFUSED: return "MAILIMAP_ERROR_CONNECTION_REFUSED";
+        case MAILIMAP_ERROR_MEMORY: return "MAILIMAP_ERROR_MEMORY";
+        case MAILIMAP_ERROR_FATAL: return "MAILIMAP_ERROR_FATAL";
+        case MAILIMAP_ERROR_PROTOCOL: return "MAILIMAP_ERROR_PROTOCOL";
+        case MAILIMAP_ERROR_DONT_ACCEPT_CONNECTION: return "MAILIMAP_ERROR_DONT_ACCEPT_CONNECTION";
+        case MAILIMAP_ERROR_APPEND: return "MAILIMAP_ERROR_APPEND";
+        case MAILIMAP_ERROR_NOOP: return "MAILIMAP_ERROR_NOOP";
+        case MAILIMAP_ERROR_LOGOUT: return "MAILIMAP_ERROR_LOGOUT";
+        case MAILIMAP_ERROR_CAPABILITY: return "MAILIMAP_ERROR_CAPABILITY";
+        case MAILIMAP_ERROR_CHECK: return "MAILIMAP_ERROR_CHECK";
+        case MAILIMAP_ERROR_CLOSE: return "MAILIMAP_ERROR_CLOSE";
+        case MAILIMAP_ERROR_EXPUNGE: return "MAILIMAP_ERROR_EXPUNGE";
+        case MAILIMAP_ERROR_COPY: return "MAILIMAP_ERROR_COPY";
+        case MAILIMAP_ERROR_UID_COPY: return "MAILIMAP_ERROR_UID_COPY";
+        case MAILIMAP_ERROR_MOVE: return "MAILIMAP_ERROR_MOVE";
+        case MAILIMAP_ERROR_UID_MOVE: return "MAILIMAP_ERROR_UID_MOVE";
+        case MAILIMAP_ERROR_CREATE: return "MAILIMAP_ERROR_CREATE";
+        case MAILIMAP_ERROR_DELETE: return "MAILIMAP_ERROR_DELETE";
+        case MAILIMAP_ERROR_EXAMINE: return "MAILIMAP_ERROR_EXAMINE";
+        case MAILIMAP_ERROR_FETCH: return "MAILIMAP_ERROR_FETCH";
+        case MAILIMAP_ERROR_UID_FETCH: return "MAILIMAP_ERROR_UID_FETCH";
+        case MAILIMAP_ERROR_LIST: return "MAILIMAP_ERROR_LIST";
+        case MAILIMAP_ERROR_LOGIN: return "MAILIMAP_ERROR_LOGIN";
+        case MAILIMAP_ERROR_LSUB: return "MAILIMAP_ERROR_LSUB";
+        case MAILIMAP_ERROR_RENAME: return "MAILIMAP_ERROR_RENAME";
+        case MAILIMAP_ERROR_SEARCH: return "MAILIMAP_ERROR_SEARCH";
+        case MAILIMAP_ERROR_UID_SEARCH: return "MAILIMAP_ERROR_UID_SEARCH";
+        case MAILIMAP_ERROR_SELECT: return "MAILIMAP_ERROR_SELECT";
+        case MAILIMAP_ERROR_STATUS: return "MAILIMAP_ERROR_STATUS";
+        case MAILIMAP_ERROR_STORE: return "MAILIMAP_ERROR_STORE";
+        case MAILIMAP_ERROR_UID_STORE: return "MAILIMAP_ERROR_UID_STORE";
+        case MAILIMAP_ERROR_SUBSCRIBE: return "MAILIMAP_ERROR_SUBSCRIBE";
+        case MAILIMAP_ERROR_UNSUBSCRIBE: return "MAILIMAP_ERROR_UNSUBSCRIBE";
+        case MAILIMAP_ERROR_STARTTLS: return "MAILIMAP_ERROR_STARTTLS";
+        case MAILIMAP_ERROR_INVAL: return "MAILIMAP_ERROR_INVAL";
+        case MAILIMAP_ERROR_EXTENSION: return "MAILIMAP_ERROR_EXTENSION";
+        case MAILIMAP_ERROR_SASL: return "MAILIMAP_ERROR_SASL";
+        case MAILIMAP_ERROR_SSL: return "MAILIMAP_ERROR_SSL";
+        case MAILIMAP_ERROR_NEEDS_MORE_DATA: return "MAILIMAP_ERROR_NEEDS_MORE_DATA";
+        case MAILIMAP_ERROR_CUSTOM_COMMAND: return "MAILIMAP_ERROR_CUSTOM_COMMAND";
+        case MAILIMAP_ERROR_CLIENTID: return "MAILIMAP_ERROR_CLIENTID";
+    }
+    
+    return NULL;
 }

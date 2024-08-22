@@ -178,11 +178,15 @@ public class IMAP: Actor {
                                                Int32(year),
                                                Int32(smaller)) {
                 let json = Hitch(own: jsonUTF8)
+                guard json.starts(with: "MAILIMAP_") == false else {
+                    return returnCallback(json.toString(), [])
+                }
+
                 let messageIDs: [Int] = json.query("$[*]") ?? []
                 return returnCallback(nil, messageIDs)
             }
             
-            return returnCallback("unknown error", [])
+            return returnCallback("cmailimap_search returned null", [])
         }
     }
     
@@ -195,11 +199,15 @@ public class IMAP: Actor {
                                                 Int32(messageIDs.count),
                                                 &cMessageIDs) {
                 let json = Hitch(own: jsonUTF8)
+                guard json.starts(with: "MAILIMAP_") == false else {
+                    return returnCallback(json.toString(), [])
+                }
+
                 let headers: [Header] = json.query("$[*]") ?? []
                 return returnCallback(nil, headers)
             }
             
-            return returnCallback("unknown error", [])
+            return returnCallback("cmailimap_headers returned null", [])
         }
     }
     
@@ -212,11 +220,15 @@ public class IMAP: Actor {
                                                  Int32(messageIDs.count),
                                                  &cMessageIDs) {
                 let json = Hitch(own: jsonUTF8)
+                guard json.starts(with: "MAILIMAP_") == false else {
+                    return returnCallback(json.toString(), [])
+                }
+                
                 let emails: [Email] = json.query("$[*]") ?? []
                 return returnCallback(nil, emails)
             }
             
-            return returnCallback("unknown error", [])
+            return returnCallback("cmailimap_download returned null", [])
         }
     }
 }
