@@ -1065,6 +1065,8 @@ static ssize_t mailstream_low_ssl_write(mailstream_low * s,
   r = wait_write(s);
   if (r <= 0)
     return r;
+
+  signal(SIGPIPE, SIG_IGN);
   
   r = SSL_write(ssl_data->ssl_conn, buf, (int) count);
   if (r > 0)
