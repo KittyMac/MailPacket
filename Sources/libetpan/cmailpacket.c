@@ -51,7 +51,7 @@ char * cmailimap_list(mailimap * session) {
 
     int result = mailimap_list(session, "", "*", &search_result);
     if (result >= MAILIMAP_ERROR_BAD_STATE) {
-        return cmail_error_string(result);
+        return strdup(cmail_error_string(result));
     }
 
     cJSON * cjson = cJSON_CreateArray();
@@ -91,7 +91,7 @@ char * cmailimap_search(void * session,
     mailimap_search_key_free(search_key);
     
     if (result >= MAILIMAP_ERROR_BAD_STATE) {
-        return cmail_error_string(result);
+        return strdup(cmail_error_string(result));
     }
     
     cJSON * cjson = cJSON_CreateArray();
@@ -127,7 +127,7 @@ char * cmailimap_headers(void * session,
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
     if (result >= MAILIMAP_ERROR_BAD_STATE) {
-        return cmail_error_string(result);
+        return strdup(cmail_error_string(result));
     }
     
     
@@ -184,7 +184,7 @@ char * cmailimap_download(void * session,
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
     if (result >= MAILIMAP_ERROR_BAD_STATE) {
-        return cmail_error_string(result);
+        return strdup(cmail_error_string(result));
     }
     
     

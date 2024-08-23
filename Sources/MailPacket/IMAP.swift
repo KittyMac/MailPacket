@@ -126,6 +126,9 @@ public class IMAP: Actor {
         queue.addOperation {
             if let mailboxesUTF8 = cmailimap_list(self.imap) {
                 let json = Hitch(own: mailboxesUTF8)
+                guard json.starts(with: "MAILIMAP_") == false else {
+                    return returnCallback([])
+                }
                 let mailboxes: [String] = json.query("$[*]") ?? []
                 returnCallback(mailboxes)
             }
