@@ -5,21 +5,23 @@ import Spanker
 
 import MailPacket
 
-fileprivate let imapAccount = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_username.txt")
-fileprivate let imapPassword = try! String(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_imap_password.txt")
-
-fileprivate let gmailAccount = Spanker.parse(halfhitch: Hitch(contentsOfFile: "/Users/rjbowli/Development/data/passwords/gmail_oauth2.json")!.halfhitch())!
+fileprivate let gmailAccount = Spanker.parse(halfhitch: Hitch(contentsOfFile: "/Volumes/GoStorage/data/passwords/gmail_oauth2.json")!.halfhitch())!
 
 final class MailPacketTests: XCTestCase {
-    func testIMAP0() {
+    
+    private func test(domain: String,
+                      account: String,
+                      password: String,
+                      after: Date,
+                      smaller: Int) {
         let expectation = XCTestExpectation(description: #function)
 
         let imap = IMAP()
         
-        imap.beConnect(domain: "imap.gmail.com",
+        imap.beConnect(domain: domain,
                        port: 993,
-                       account: imapAccount,
-                       password: imapPassword,
+                       account: account,
+                       password: password,
                        oauth2: false,
                        imap) { error in
             
@@ -29,12 +31,12 @@ final class MailPacketTests: XCTestCase {
                 
                 print(folders)
                 
-                imap.beExamine(folder: "[Gmail]/All Mail",
+                imap.beExamine(folder: "INBOX",
                                imap) { error in
                     
                     imap.beSearch(folder: "INBOX",
-                                  after: "2/26/2024".date()!,
-                                  smaller: 1024 * 512,
+                                  after: after,
+                                  smaller: smaller,
                                   imap) { error, messageIds in
                         XCTAssertNil(error)
                                         
@@ -72,7 +74,24 @@ final class MailPacketTests: XCTestCase {
         wait(for: [expectation], timeout: 60)
     }
     
-    func testGmail0() {
+    func testIMAP_Gmail0() {
+        test(domain: "imap.gmail.com",
+             account: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/gmail_imap_username.txt"),
+             password: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/gmail_imap_password.txt"),
+             after: "10/1/2024".date()!,
+             smaller: 1024 * 512)
+    }
+    
+    func testIMAP_iCloud0() {
+        // NOTE: searching for size does not work on icloud
+        test(domain: "imap.mail.me.com",
+             account: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/icloud_imap_username.txt"),
+             password: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/icloud_imap_password.txt"),
+             after: "10/1/2024".date()!,
+             smaller: 0)
+    }
+    
+    func testGmail_Gmail0() {
         let expectation = XCTestExpectation(description: #function)
 
         let gmail = Gmail()

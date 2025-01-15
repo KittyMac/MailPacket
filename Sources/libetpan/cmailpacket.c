@@ -75,10 +75,13 @@ char * cmailimap_search(void * session,
                         int search_smaller) {
     struct mailimap_search_key * search_key = mailimap_search_key_new_multiple_empty();
     
+    mailimap_search_key_multiple_add(search_key, mailimap_search_key_new_all());
+    
     if (search_smaller != 0) {
         struct mailimap_search_key * smaller = mailimap_search_key_new_smaller(search_smaller);
         mailimap_search_key_multiple_add(search_key, smaller);
     }
+    
     if (search_year != 0) {
         struct mailimap_date * imap_date = mailimap_date_new(search_day, search_month, search_year);
         struct mailimap_search_key * since = mailimap_search_key_new_since(imap_date);
@@ -105,7 +108,7 @@ char * cmailimap_search(void * session,
     char * json = cJSON_PrintUnformatted(cjson);
     cJSON_Delete(cjson);
     
-    // mailimap_search_list_free(search_result);
+    mailimap_search_result_free(search_result);
 
     return json;
 }
@@ -178,7 +181,7 @@ char * cmailimap_download(void * session,
         mailimap_set_add_single(uidSet, uids[i]);
     }
     
-    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822());
+    mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_body_section(mailimap_section_new(NULL)));
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
 
     clist * fetch_result;
@@ -206,8 +209,8 @@ char * cmailimap_download(void * session,
             if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
                 cJSON_AddNumberToObject(eml, "messageID", item->att_data.att_static->att_data.att_uid);
             }
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822) {
-                cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_rfc822.att_content);
+            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_BODY_SECTION) {
+                cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_body_section->sec_body_part);
             }
         }
         
