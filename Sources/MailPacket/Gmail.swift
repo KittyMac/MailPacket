@@ -1,7 +1,6 @@
 import Foundation
 import Flynn
 import Hitch
-import libetpan
 import Sextant
 import Picaroon
 import Spanker

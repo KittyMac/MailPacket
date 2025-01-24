@@ -1,8 +1,92 @@
 import Foundation
 import Flynn
 import Hitch
-import libetpan
 import Sextant
+
+#if !canImport(libetpan)
+public class IMAP: Actor {
+    public struct Header: Codable {
+        public let messageID: Int
+        public let headers: String
+    }
+
+    public struct Email: Codable {
+        public let messageID: Int
+        public let eml: String
+    }
+
+    public struct ConnectionInfo: Codable {
+        public let domain: String
+        public let port: Int
+        public let account: String
+        public let password: String
+        public let oauth2: Bool
+        
+        public init(domain: String,
+                    port: Int,
+                    account: String,
+                    password: String,
+                    oauth2: Bool) {
+            self.domain = domain
+            self.port = port
+            self.account = account
+            self.password = password
+            self.oauth2 = oauth2
+        }
+    }
+    
+    internal func _beClose(_ returnCallback: @escaping () -> ()) {
+        returnCallback()
+    }
+        
+    internal func _beGetConnection() -> ConnectionInfo? {
+        return nil
+    }
+    
+    internal func _beConnect(domain: String,
+                             port: Int,
+                             account: String,
+                             password: String,
+                             oauth2: Bool,
+                             _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
+    
+    internal func _beGetFolders(_ returnCallback: @escaping ([String]) -> ()) {
+        return returnCallback([])
+    }
+    
+    internal func _beSelect(folder: String,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
+    
+    internal func _beExamine(folder: String,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
+    
+    internal func _beSearch(folder: String,
+                            after: Date,
+                            smaller: Int = 0,
+                            _ returnCallback: @escaping (String?, [Int]) -> ()) {
+        return returnCallback("unsupported platform", [])
+    }
+    
+    internal func _beHeaders(messageIDs: [Int],
+                             _ returnCallback: @escaping (String?, [Header]) -> ()) {
+        return returnCallback("unsupported platform", [])
+    }
+    
+    internal func _beDownload(messageIDs: [Int],
+                              _ returnCallback: @escaping (String?, [Email]) -> ()) {
+      return returnCallback("unsupported platform", [])
+    }
+}
+#endif
+
+#if canImport(libetpan)
+import libetpan
 
 /*
  // Common error strings defined in mailcore 2 that libetpan can return
@@ -235,3 +319,5 @@ public class IMAP: Actor {
         }
     }
 }
+
+#endif

@@ -1,6 +1,8 @@
 import Foundation
 import Flynn
 import Hitch
+
+#if canImport(libetpan)
 import libetpan
 
 typealias CError = Int32
@@ -109,3 +111,5 @@ extension CError {
         }
     }
 }
+
+#endif
