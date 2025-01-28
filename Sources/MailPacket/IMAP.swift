@@ -5,6 +5,9 @@ import Sextant
 
 #if !canImport(libetpan)
 public class IMAP: Actor {
+    
+    public var unsafeConnectionInfo: ConnectionInfo? = nil
+    
     public struct Header: Codable {
         public let messageID: Int
         public let headers: String
