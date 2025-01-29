@@ -10,11 +10,13 @@ public class IMAP: Actor {
     
     public struct Header: Codable {
         public let messageID: Int
+        public let gmailThreadId: String?
         public let headers: String
     }
 
     public struct Email: Codable {
         public let messageID: Int
+        public let gmailThreadId: String?
         public let eml: String
     }
 

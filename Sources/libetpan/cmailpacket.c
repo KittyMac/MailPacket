@@ -230,7 +230,7 @@ char * cmailimap_download(void * session,
         for(cur2 = clist_begin(msg_att->att_list); cur2 != NULL; cur2 = clist_next(cur2)) {
             struct mailimap_msg_att_item * item = clist_content(cur2);
             
-            if (item->att_type != MAILIMAP_MSG_ATT_ITEM_STATIC) {
+            if (item->att_type == MAILIMAP_MSG_ATT_ITEM_STATIC) {
                 if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
                     cJSON_AddNumberToObject(eml, "messageID", item->att_data.att_static->att_data.att_uid);
                 }
