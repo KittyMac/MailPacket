@@ -38,6 +38,10 @@ int cmailimap_oauth2_authenticate(void * session, const char * userid, const cha
     return mailimap_oauth2_authenticate(session, userid, password);
 }
 
+bool cmailimap_has_extension(mailimap * session, const char * extension_name) {
+    return mailimap_has_extension(session, extension_name) != 0;
+}
+
 int cmailimap_examine(mailimap * session, const char * mb) {
     return mailimap_examine(session, mb);
 }
@@ -115,7 +119,8 @@ char * cmailimap_search(void * session,
 
 char * cmailimap_headers(void * session,
                          int num,
-                         int * uids) {
+                         int * uids,
+                         bool hasGmailExtension) {
     
     struct mailimap_fetch_type * att_list = mailimap_fetch_type_new_fetch_att_list_empty();
         
@@ -126,6 +131,11 @@ char * cmailimap_headers(void * session,
         
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_rfc822_header());
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
+    
+    if (hasGmailExtension) {
+        mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_xgmthrid());
+    }
+
 
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
@@ -137,6 +147,7 @@ char * cmailimap_headers(void * session,
     cJSON * cjson = cJSON_CreateArray();
 
     clistiter * cur;
+    char tempString[512];
     for(cur = clist_begin(fetch_result); cur != NULL; cur = clist_next(cur)) {
         struct mailimap_msg_att * msg_att = clist_content(cur);
         
@@ -146,16 +157,26 @@ char * cmailimap_headers(void * session,
         for(cur2 = clist_begin(msg_att->att_list); cur2 != NULL; cur2 = clist_next(cur2)) {
             struct mailimap_msg_att_item * item = clist_content(cur2);
             
-            if (item->att_type != MAILIMAP_MSG_ATT_ITEM_STATIC) {
-                continue;
+            if (item->att_type == MAILIMAP_MSG_ATT_ITEM_STATIC) {
+                
+                if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
+                    cJSON_AddNumberToObject(messageJsonObj, "messageID", item->att_data.att_static->att_data.att_uid);
+                }
+                
+                if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822_HEADER) {
+                    cJSON_AddStringToObject(messageJsonObj, "headers", item->att_data.att_static->att_data.att_rfc822_header.att_content);
+                }
             }
             
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
-                cJSON_AddNumberToObject(messageJsonObj, "messageID", item->att_data.att_static->att_data.att_uid);
-            }
-            
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_RFC822_HEADER) {
-                cJSON_AddStringToObject(messageJsonObj, "headers", item->att_data.att_static->att_data.att_rfc822_header.att_content);
+            if (item->att_type == MAILIMAP_MSG_ATT_ITEM_EXTENSION) {
+                struct mailimap_extension_data * ext_data;
+                
+                ext_data = item->att_data.att_extension_data;
+                if (ext_data->ext_extension == &mailimap_extension_xgmthrid) {
+                    uint64_t * threadID = (uint64_t *) ext_data->ext_data;
+                    snprintf(tempString, sizeof(tempString), "%llx", *threadID);
+                    cJSON_AddStringToObject(messageJsonObj, "gmailThreadId", tempString);
+                }
             }
         }
         
@@ -172,7 +193,8 @@ char * cmailimap_headers(void * session,
 
 char * cmailimap_download(void * session,
                           int num,
-                          int * uids) {
+                          int * uids,
+                          bool hasGmailExtension) {
     
     struct mailimap_fetch_type * att_list = mailimap_fetch_type_new_fetch_att_list_empty();
         
@@ -183,6 +205,10 @@ char * cmailimap_download(void * session,
     
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_body_section(mailimap_section_new(NULL)));
     mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_uid());
+    
+    if (hasGmailExtension) {
+        mailimap_fetch_type_new_fetch_att_list_add(att_list, mailimap_fetch_att_new_xgmthrid());
+    }
 
     clist * fetch_result;
     int result = mailimap_uid_fetch(session, uidSet, att_list, &fetch_result);
@@ -200,18 +226,30 @@ char * cmailimap_download(void * session,
         cJSON * eml = cJSON_CreateObject();
 
         clistiter * cur2;
+        char tempString[512];
         for(cur2 = clist_begin(msg_att->att_list); cur2 != NULL; cur2 = clist_next(cur2)) {
             struct mailimap_msg_att_item * item = clist_content(cur2);
             
             if (item->att_type != MAILIMAP_MSG_ATT_ITEM_STATIC) {
-                continue;
+                if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
+                    cJSON_AddNumberToObject(eml, "messageID", item->att_data.att_static->att_data.att_uid);
+                }
+                if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_BODY_SECTION) {
+                    cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_body_section->sec_body_part);
+                }
             }
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_UID) {
-                cJSON_AddNumberToObject(eml, "messageID", item->att_data.att_static->att_data.att_uid);
+            
+            if (item->att_type == MAILIMAP_MSG_ATT_ITEM_EXTENSION) {
+                struct mailimap_extension_data * ext_data;
+                
+                ext_data = item->att_data.att_extension_data;
+                if (ext_data->ext_extension == &mailimap_extension_xgmthrid) {
+                    uint64_t * threadID = (uint64_t *) ext_data->ext_data;
+                    snprintf(tempString, sizeof(tempString), "%llx", *threadID);
+                    cJSON_AddStringToObject(eml, "gmailThreadId", tempString);
+                }
             }
-            if (item->att_data.att_static->att_type == MAILIMAP_MSG_ATT_BODY_SECTION) {
-                cJSON_AddStringToObject(eml, "eml", item->att_data.att_static->att_data.att_body_section->sec_body_part);
-            }
+
         }
         
         cJSON_AddItemToArray(cjson, eml);

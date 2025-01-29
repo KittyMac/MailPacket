@@ -112,11 +112,13 @@ import FoundationNetworking
 public class IMAP: Actor {
     public struct Header: Codable {
         public let messageID: Int
+        public let gmailThreadId: String?
         public let headers: String
     }
 
     public struct Email: Codable {
         public let messageID: Int
+        public let gmailThreadId: String?
         public let eml: String
     }
 
@@ -126,17 +128,20 @@ public class IMAP: Actor {
         public let account: String
         public let password: String
         public let oauth2: Bool
+        public let hasGmailExtension: Bool
         
         public init(domain: String,
                     port: Int,
                     account: String,
                     password: String,
-                    oauth2: Bool) {
+                    oauth2: Bool,
+                    hasGmailExtension: Bool) {
             self.domain = domain
             self.port = port
             self.account = account
             self.password = password
             self.oauth2 = oauth2
+            self.hasGmailExtension = hasGmailExtension
         }
     }
     
@@ -145,6 +150,7 @@ public class IMAP: Actor {
     private let imap: UnsafeMutableRawPointer?
     
     public var unsafeConnectionInfo: ConnectionInfo?
+    private var hasGmailExtension: Bool = false
     
     public override init() {
         queue = OperationQueue()
@@ -194,11 +200,13 @@ public class IMAP: Actor {
                 return returnCallback(error)
             }
             
+            self.hasGmailExtension = cmailimap_has_extension(self.imap, "X-GM-EXT-1")
             self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
                                                        port: port,
                                                        account: account,
                                                        password: password,
-                                                       oauth2: oauth2)
+                                                       oauth2: oauth2,
+                                                       hasGmailExtension: self.hasGmailExtension)
             
             result = cmailimap_examine(self.imap, "INBOX")
             if let error = result.toString(self.imapResponse()) {
@@ -287,7 +295,8 @@ public class IMAP: Actor {
             
             if let jsonUTF8 = cmailimap_headers(self.imap,
                                                 Int32(messageIDs.count),
-                                                &cMessageIDs) {
+                                                &cMessageIDs,
+                                                self.hasGmailExtension) {
                 let json = Hitch(own: jsonUTF8)
                 guard json.starts(with: "MAILIMAP_") == false else {
                     return returnCallback(json.toString(), [])
@@ -308,7 +317,8 @@ public class IMAP: Actor {
             
             if let jsonUTF8 = cmailimap_download(self.imap,
                                                  Int32(messageIDs.count),
-                                                 &cMessageIDs) {
+                                                 &cMessageIDs,
+                                                 self.hasGmailExtension) {
                 let json = Hitch(own: jsonUTF8)
                 guard json.starts(with: "MAILIMAP_") == false else {
                     return returnCallback(json.toString(), [])
