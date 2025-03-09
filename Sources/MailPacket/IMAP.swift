@@ -292,6 +292,10 @@ public class IMAP: Actor {
     
     internal func _beHeaders(messageIDs: [Int],
                              _ returnCallback: @escaping (String?, [Header]) -> ()) {
+        if messageIDs.isEmpty {
+            return returnCallback(nil, [])
+        }
+        
         queue.addOperation {
             var cMessageIDs = messageIDs.map { Int32($0) }
             
@@ -314,6 +318,10 @@ public class IMAP: Actor {
     
     internal func _beDownload(messageIDs: [Int],
                               _ returnCallback: @escaping (String?, [Email]) -> ()) {
+        if messageIDs.isEmpty {
+            return returnCallback(nil, [])
+        }
+        
         queue.addOperation {
             var cMessageIDs = messageIDs.map { Int32($0) }
             
