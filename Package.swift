@@ -47,9 +47,6 @@ libetpanDependency = [
 
 let package = Package(
     name: "MailPacket",
-    platforms: [
-        .macOS(.v10_13), .iOS(.v11)
-    ],
     products: dynamicLibs + [
         .library( name: "MailPacket", targets: ["MailPacket"] )
     ],

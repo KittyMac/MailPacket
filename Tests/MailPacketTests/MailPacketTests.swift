@@ -97,14 +97,17 @@ final class MailPacketTests: XCTestCase {
         let gmail = Gmail()
         
         let accessToken = gmailAccount[string: "accessToken"]!
-        let refreshToken = gmailAccount[string: "refreshToken"]!
-        let clientId = gmailAccount[string: "clientId"]!
-        let clientSecret = gmailAccount[string: "clientSecret"]!
         
-        let tokenRefresh = Gmail.TokenRefresh(clientId: clientId,
-                                              clientSecret: clientSecret,
-                                              refreshToken: refreshToken)
+        var tokenRefresh: Gmail.TokenRefresh? = nil
         
+        if let refreshToken = gmailAccount[string: "refreshToken"],
+           let clientId = gmailAccount[string: "clientId"],
+           let clientSecret = gmailAccount[string: "clientSecret"] {
+            tokenRefresh = Gmail.TokenRefresh(clientId: clientId,
+                                                  clientSecret: clientSecret,
+                                                  refreshToken: refreshToken)
+        }
+                
         // Requires OAUTH2 token with appropriate scopes.
         // "https://www.googleapis.com/auth/gmail.readonly" is good scope to start with
         // Set up app on google: https://console.cloud.google.com
@@ -121,15 +124,19 @@ final class MailPacketTests: XCTestCase {
                            gmail) { error, messageIds in
                 XCTAssertNil(error)
                 
-                print(messageIds)
+                print("\(messageIds.count) messages from date")
                 
                 gmail.beHeaders(messageIDs: messageIds, gmail) { error, headers in
                     XCTAssertNil(error)
                     XCTAssertEqual(messageIds.count, headers.count)
                     
+                    print("\(headers.count) headers downloaded")
+                    
                     gmail.beDownload(messageIDs: messageIds, gmail) { error, emails in
                         XCTAssertNil(error)
                         XCTAssertEqual(messageIds.count, emails.count)
+                        
+                        print("\(emails.count) emails downloaded")
                         
                         for email in emails {
                             print("\(email.messageID): \(email.eml.count) eml bytes")
