@@ -9,6 +9,10 @@ all: build
 build:
 	swift build -Xswiftc -enable-library-evolution -v $(SWIFT_BUILD_FLAGS)
 
+build-android:
+	ANDROID_NDK_HOME=~/Downloads/android-ndk-r27d ~/Library/org.swift.swiftpm/swift-sdks/swift-6.2-RELEASE-android-0.1.artifactbundle/swift-android/scripts/setup-android-sdk.sh
+	swiftly run swift build  --configuration=release -Xcc -Oz -Xswiftc -Osize -Xswiftc -whole-module-optimization -Xswiftc -gnone --swift-sdk aarch64-unknown-linux-android28 +6.2
+
 clean:
 	rm -rf .build
 
