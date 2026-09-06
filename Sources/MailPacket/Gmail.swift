@@ -171,8 +171,10 @@ public class Gmail: Actor {
     public override init() {
         super.init()
         
-        Flynn.Timer(timeInterval: 0.01, immediate: false, repeats: true, self) { [weak self] timer in
-            self?.nextRequest()
+        unsafeSend { _ in
+            Flynn.Timer(timeInterval: 0.01, immediate: false, repeats: true, self) { [weak self] timer in
+                self?.nextRequest()
+            }
         }
     }
     
