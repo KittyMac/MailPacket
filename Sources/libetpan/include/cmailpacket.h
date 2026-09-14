@@ -33,4 +33,24 @@ extern char * cmailimap_download(void * session,
                                  int num,
                                  int * uids,
                                  bool hasGmailExtension);
+extern int cmailimap_append(void * session,
+                            const char * mailbox,
+                            const char * eml,
+                            int eml_size,
+                            bool seen);
+
+extern void * cmailsmtp_new(void);
+extern void cmailsmtp_free(void * session);
+extern char * csmtp_response(void * session);
+extern int cmailsmtp_ssl_connect(void * session, const char * server, uint16_t port);
+extern int cmailsmtp_starttls_connect(void * session, const char * server, uint16_t port);
+extern int cmailsmtp_login(void * session, const char * userid, const char * password);
+extern int cmailsmtp_oauth2_authenticate(void * session, const char * userid, const char * access_token);
+extern int cmailsmtp_send(void * session,
+                          const char * from,
+                          int num_recipients,
+                          const char ** recipients,
+                          const char * eml,
+                          int eml_size);
+extern int cmailsmtp_quit(void * session);
 #endif

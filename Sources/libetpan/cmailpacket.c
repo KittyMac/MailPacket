@@ -4,6 +4,11 @@
 #include <stdint.h>
 
 #include "mailimap.h"
+#include "mailsmtp.h"
+#include "mailsmtp_helper.h"
+#include "mailsmtp_socket.h"
+#include "mailsmtp_ssl.h"
+#include "mailsmtp_oauth2.h"
 #include "cJSON.h"
 
 char * cmail_error_string(int result);
@@ -261,6 +266,133 @@ char * cmailimap_download(void * session,
     mailimap_fetch_list_free(fetch_result);
 
     return json;
+}
+
+// MARK: - append
+
+// Appends an already composed rfc822 message to a mailbox (ie "save a copy in
+// Sent"). NOTE: this does NOT deliver mail to anyone; use cmailsmtp_send() for
+// that. eml is expected to already use CRLF line endings.
+int cmailimap_append(void * session,
+                     const char * mailbox,
+                     const char * eml,
+                     int eml_size,
+                     bool seen) {
+    struct mailimap_flag_list * flag_list = NULL;
+
+    if (seen) {
+        flag_list = mailimap_flag_list_new_empty();
+        if (flag_list == NULL) {
+            return MAILIMAP_ERROR_MEMORY;
+        }
+
+        struct mailimap_flag * flag = mailimap_flag_new_seen();
+        if (flag == NULL) {
+            mailimap_flag_list_free(flag_list);
+            return MAILIMAP_ERROR_MEMORY;
+        }
+
+        if (mailimap_flag_list_add(flag_list, flag) != MAILIMAP_NO_ERROR) {
+            mailimap_flag_free(flag);
+            mailimap_flag_list_free(flag_list);
+            return MAILIMAP_ERROR_MEMORY;
+        }
+    }
+
+    int result = mailimap_append(session,
+                                 mailbox,
+                                 flag_list,
+                                 NULL,
+                                 eml,
+                                 (size_t)eml_size);
+
+    if (flag_list != NULL) {
+        mailimap_flag_list_free(flag_list);
+    }
+
+    return result;
+}
+
+// MARK: - smtp
+
+void * cmailsmtp_new(void) {
+    return mailsmtp_new(0, NULL);
+}
+
+void cmailsmtp_free(void * session) {
+    mailsmtp_free(session);
+}
+
+char * csmtp_response(void * session) {
+    char * msg = ((mailsmtp *)session)->response;
+    if (msg == NULL) { return msg; }
+    return strdup(msg);
+}
+
+// implicit tls (typically port 465)
+int cmailsmtp_ssl_connect(void * session, const char * server, uint16_t port) {
+    int result = mailsmtp_ssl_connect(session, server, port);
+    if (result != MAILSMTP_NO_ERROR) { return result; }
+    return mailsmtp_init(session);
+}
+
+// explicit tls / STARTTLS (typically port 587)
+int cmailsmtp_starttls_connect(void * session, const char * server, uint16_t port) {
+    int result = mailsmtp_socket_connect(session, server, port);
+    if (result != MAILSMTP_NO_ERROR) { return result; }
+
+    result = mailsmtp_init(session);
+    if (result != MAILSMTP_NO_ERROR) { return result; }
+
+    result = mailsmtp_socket_starttls(session);
+    if (result != MAILSMTP_NO_ERROR) { return result; }
+
+    // ehlo again, capabilities change after the tls upgrade
+    return mailsmtp_init(session);
+}
+
+int cmailsmtp_login(void * session, const char * userid, const char * password) {
+    return mailsmtp_auth(session, userid, password);
+}
+
+int cmailsmtp_oauth2_authenticate(void * session, const char * userid, const char * access_token) {
+    return mailsmtp_oauth2_authenticate(session, userid, access_token);
+}
+
+int cmailsmtp_send(void * session,
+                   const char * from,
+                   int num_recipients,
+                   const char ** recipients,
+                   const char * eml,
+                   int eml_size) {
+    clist * addresses = esmtp_address_list_new();
+    if (addresses == NULL) {
+        return MAILSMTP_ERROR_MEMORY;
+    }
+
+    for (int i = 0; i < num_recipients; i++) {
+        int result = esmtp_address_list_add(addresses, (char *)recipients[i], 0, NULL);
+        if (result != MAILSMTP_NO_ERROR) {
+            esmtp_address_list_free(addresses);
+            return result;
+        }
+    }
+
+    int result = mailesmtp_send(session,
+                                from,
+                                0,
+                                NULL,
+                                addresses,
+                                eml,
+                                (size_t)eml_size);
+
+    esmtp_address_list_free(addresses);
+
+    return result;
+}
+
+int cmailsmtp_quit(void * session) {
+    return mailsmtp_quit(session);
 }
 
 char * cmail_error_string(int result) {

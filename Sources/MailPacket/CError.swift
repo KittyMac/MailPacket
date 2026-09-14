@@ -112,4 +112,79 @@ extension CError {
     }
 }
 
+// MARK: - smtp
+
+// smtp uses its own error enum (MAILSMTP_ERROR_XXX), which does not line up
+// with the imap one, so it gets its own mapping
+typealias CSMTPError = Int32
+
+extension CSMTPError {
+    private enum CSMTPErrorEnum: Int32 {
+        case success = 0
+        case unexpected_code
+        case service_not_available
+        case stream
+        case hostname
+        case not_implemented
+        case action_not_taken
+        case exceed_storage_allocation
+        case in_processing
+        case insufficient_system_storage
+        case mailbox_unavailable
+        case mailbox_name_not_allowed
+        case bad_sequence_of_command
+        case user_not_local
+        case transaction_failed
+        case memory
+        case auth_not_supported
+        case auth_login
+        case auth_required
+        case auth_too_weak
+        case auth_transition_needed
+        case auth_temporary_failure
+        case auth_encryption_required
+        case starttls_temporary_failure
+        case starttls_not_supported
+        case connection_refused
+        case auth_authentication_failed
+        case ssl
+        case clientid_not_supported
+    }
+    
+    func toSMTPString(_ detials: String?) -> String? {
+        switch CSMTPErrorEnum(rawValue: self) {
+        case .success: return nil
+        case .unexpected_code: return "unexpected_code: \(detials ?? "unknown")"
+        case .service_not_available: return "service_not_available: \(detials ?? "unknown")"
+        case .stream: return "stream: \(detials ?? "unknown")"
+        case .hostname: return "hostname: \(detials ?? "unknown")"
+        case .not_implemented: return "not_implemented: \(detials ?? "unknown")"
+        case .action_not_taken: return "action_not_taken: \(detials ?? "unknown")"
+        case .exceed_storage_allocation: return "exceed_storage_allocation: \(detials ?? "unknown")"
+        case .in_processing: return "in_processing: \(detials ?? "unknown")"
+        case .insufficient_system_storage: return "insufficient_system_storage: \(detials ?? "unknown")"
+        case .mailbox_unavailable: return "mailbox_unavailable: \(detials ?? "unknown")"
+        case .mailbox_name_not_allowed: return "mailbox_name_not_allowed: \(detials ?? "unknown")"
+        case .bad_sequence_of_command: return "bad_sequence_of_command: \(detials ?? "unknown")"
+        case .user_not_local: return "user_not_local: \(detials ?? "unknown")"
+        case .transaction_failed: return "transaction_failed: \(detials ?? "unknown")"
+        case .memory: return "memory: \(detials ?? "unknown")"
+        case .auth_not_supported: return "auth_not_supported: \(detials ?? "unknown")"
+        case .auth_login: return "auth_login: \(detials ?? "unknown")"
+        case .auth_required: return "auth_required: \(detials ?? "unknown")"
+        case .auth_too_weak: return "auth_too_weak: \(detials ?? "unknown")"
+        case .auth_transition_needed: return "auth_transition_needed: \(detials ?? "unknown")"
+        case .auth_temporary_failure: return "auth_temporary_failure: \(detials ?? "unknown")"
+        case .auth_encryption_required: return "auth_encryption_required: \(detials ?? "unknown")"
+        case .starttls_temporary_failure: return "starttls_temporary_failure: \(detials ?? "unknown")"
+        case .starttls_not_supported: return "starttls_not_supported: \(detials ?? "unknown")"
+        case .connection_refused: return "connection_refused: \(detials ?? "unknown")"
+        case .auth_authentication_failed: return "auth_authentication_failed: \(detials ?? "unknown")"
+        case .ssl: return "ssl: \(detials ?? "unknown")"
+        case .clientid_not_supported: return "clientid_not_supported: \(detials ?? "unknown")"
+        default: return "unknown smtp error: \(detials ?? "unknown")"
+        }
+    }
+}
+
 #endif

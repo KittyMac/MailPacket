@@ -6,3 +6,5 @@ Minimal Flynn-enabled wrapper around libetpan to perform basic mail functionalit
 - search
 - download headers
 - download eml
+- append (save an eml to a folder, ie Sent or Drafts)
+- send (via SMTP)

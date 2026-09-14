@@ -87,6 +87,13 @@ public class IMAP: Actor {
                               _ returnCallback: @escaping (String?, [Email]) -> ()) {
       return returnCallback("unsupported platform", [])
     }
+    
+    internal func _beAppend(folder: String,
+                            eml: String,
+                            seen: Bool = true,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
 }
 #endif
 
@@ -339,6 +346,39 @@ public class IMAP: Actor {
             }
             
             return returnCallback("cmailimap_download returned null", [])
+        }
+    }
+    
+    /// Appends an already composed rfc822 message to the given folder. This is
+    /// IMAP APPEND; it stores a message on the server (ie "save a copy in Sent",
+    /// or save a draft). It does NOT deliver the message to any recipient; use
+    /// SMTP for that.
+    internal func _beAppend(folder: String,
+                            eml: String,
+                            seen: Bool = true,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        // IMAP literals are required to use CRLF line endings
+        let bytes = Array(eml
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\n", with: "\r\n")
+            .utf8)
+        
+        queue.addOperation {
+            let result: CError = bytes.withUnsafeBufferPointer { buffer in
+                return buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { emlPtr in
+                    return cmailimap_append(self.imap,
+                                            folder,
+                                            emlPtr,
+                                            Int32(bytes.count),
+                                            seen)
+                }
+            }
+            
+            if let error = result.toString(self.imapResponse()) {
+                return returnCallback(error)
+            }
+            
+            returnCallback(nil)
         }
     }
 }
