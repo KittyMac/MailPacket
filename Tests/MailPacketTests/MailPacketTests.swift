@@ -155,4 +155,49 @@ final class MailPacketTests: XCTestCase {
         
         wait(for: [expectation], timeout: 240)
     }
+    
+    // MARK: Sending emails
+    
+    private func test(domain: String,
+                      account: String,
+                      password: String,
+                      message: String) {
+        let expectation = XCTestExpectation(description: #function)
+
+        let snmp = SMTP()
+        
+        snmp.beConnect(domain: domain,
+                       port: 465,
+                       account: account,
+                       password: password,
+                       oauth2: false,
+                       security: .ssl,
+                       snmp) { error in
+            
+            XCTAssertNil(error)
+                        
+            let eml = EML(from: EML.Address(account, name: "DIS"),
+                          to: [EML.Address(account, name: "DIS")],
+                          subject: "Complete your login",
+                          body: "Click the link to complete your login: \n")
+                        
+            snmp.beSend(eml: eml,
+                        snmp) { error in
+                
+                XCTAssertNil(error)
+                
+                expectation.fulfill()
+            }
+            
+        }
+        
+        wait(for: [expectation], timeout: 60)
+    }
+    
+    func testSMTP_Gmail0() {
+        test(domain: "smtp.gmail.com",
+             account: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/gmail_imap_username.txt"),
+             password: try! String(contentsOfFile: "/Volumes/GoStorage/data/passwords/gmail_imap_password.txt"),
+             message: "Hello World")
+    }
 }

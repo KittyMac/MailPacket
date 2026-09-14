@@ -94,6 +94,13 @@ public class IMAP: Actor {
                             _ returnCallback: @escaping (String?) -> ()) {
         return returnCallback("unsupported platform")
     }
+    
+    internal func _beAppend(folder: String,
+                            eml: EML,
+                            seen: Bool = true,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
 }
 #endif
 
@@ -380,6 +387,17 @@ public class IMAP: Actor {
             
             returnCallback(nil)
         }
+    }
+    
+    /// Composes an EML and appends it to the given folder.
+    internal func _beAppend(folder: String,
+                            eml: EML,
+                            seen: Bool = true,
+                            _ returnCallback: @escaping (String?) -> ()) {
+        _beAppend(folder: folder,
+                  eml: eml.eml(),
+                  seen: seen,
+                  returnCallback)
     }
 }
 

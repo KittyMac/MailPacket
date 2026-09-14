@@ -59,6 +59,11 @@ public class SMTP: Actor {
                           _ returnCallback: @escaping (String?) -> ()) {
         return returnCallback("unsupported platform")
     }
+    
+    internal func _beSend(eml: EML,
+                          _ returnCallback: @escaping (String?) -> ()) {
+        return returnCallback("unsupported platform")
+    }
 }
 #endif
 
@@ -223,6 +228,16 @@ public class SMTP: Actor {
             
             returnCallback(nil)
         }
+    }
+    
+    /// Composes and sends an EML. The envelope is taken from the message; bcc
+    /// recipients are included in the envelope but not in the headers.
+    internal func _beSend(eml: EML,
+                          _ returnCallback: @escaping (String?) -> ()) {
+        _beSend(from: eml.from.email,
+                recipients: eml.recipients,
+                eml: eml.eml(),
+                returnCallback)
     }
 }
 
