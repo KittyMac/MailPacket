@@ -41,6 +41,11 @@ public struct EML: Codable {
     public var replyTo: [Address]
     public var subject: String
     public var body: String
+    
+    /// Optional html alternative. When set the message is sent as
+    /// multipart/alternative, with body as the plain text fallback.
+    public var html: String?
+    
     public var date: Date
     public var timeZone: TimeZone
     
@@ -55,10 +60,15 @@ public struct EML: Codable {
     public var userAgent: String?
     public var extraHeaders: [Header]
     
+    /// The multipart boundary. Generated once so that eml() is deterministic;
+    /// it is replaced automatically if it would ever collide with the content.
+    public var boundary: String
+    
     public init(from: Address,
                 to: [Address],
                 subject: String,
                 body: String,
+                html: String? = nil,
                 cc: [Address] = [],
                 bcc: [Address] = [],
                 replyTo: [Address] = [],
@@ -76,6 +86,7 @@ public struct EML: Codable {
         self.replyTo = replyTo
         self.subject = EML.sanitize(subject)
         self.body = body
+        self.html = html
         self.date = date
         self.timeZone = timeZone
         self.messageID = EML.sanitize(messageID ?? EML.generateMessageID(from: from))
@@ -83,6 +94,7 @@ public struct EML: Codable {
         self.references = references.map { EML.sanitize($0) }
         self.userAgent = userAgent.map { EML.sanitize($0) }
         self.extraHeaders = extraHeaders
+        self.boundary = EML.generateBoundary()
     }
     
     /// The smtp envelope recipients; to + cc + bcc. Bcc intentionally appears
@@ -123,13 +135,45 @@ public struct EML: Codable {
             lines.append(EML.fold(name: header.name, value: EML.encodeIfNeeded(header.value)))
         }
         
-        let encoded = EML.encode(body: body)
-        
         lines.append("MIME-Version: 1.0")
-        lines.append("Content-Type: text/plain; charset=\(encoded.charset)")
-        lines.append("Content-Transfer-Encoding: \(encoded.encoding)")
         
-        return lines.joined(separator: "\r\n") + "\r\n\r\n" + encoded.body
+        guard let html = html else {
+            let encoded = EML.encode(body: body)
+            lines.append("Content-Type: text/plain; charset=\(encoded.charset)")
+            lines.append("Content-Transfer-Encoding: \(encoded.encoding)")
+            return lines.joined(separator: "\r\n") + "\r\n\r\n" + encoded.body
+        }
+        
+        let plainPart = EML.encode(body: body)
+        let htmlPart = EML.encode(body: html)
+        
+        // a boundary is only legal if it appears nowhere in the content
+        var boundary = self.boundary
+        while plainPart.body.contains(boundary) || htmlPart.body.contains(boundary) {
+            boundary = EML.generateBoundary()
+        }
+        
+        lines.append("Content-Type: multipart/alternative; boundary=\"\(boundary)\"")
+        
+        var result = lines.joined(separator: "\r\n") + "\r\n\r\n"
+        
+        // ignored by mime clients, shown by the ones that predate mime
+        result += "This is a multipart message in MIME format.\r\n"
+        
+        // least rich alternative first, per rfc2046
+        result += "\r\n--\(boundary)\r\n"
+        result += "Content-Type: text/plain; charset=\(plainPart.charset)\r\n"
+        result += "Content-Transfer-Encoding: \(plainPart.encoding)\r\n\r\n"
+        result += plainPart.body
+        
+        result += "\r\n--\(boundary)\r\n"
+        result += "Content-Type: text/html; charset=\(htmlPart.charset)\r\n"
+        result += "Content-Transfer-Encoding: \(htmlPart.encoding)\r\n\r\n"
+        result += htmlPart.body
+        
+        result += "\r\n--\(boundary)--\r\n"
+        
+        return result
     }
     
     // MARK: - internals
@@ -150,6 +194,10 @@ public struct EML: Codable {
     internal static func generateMessageID(from: Address) -> String {
         let domain = from.email.components(separatedBy: "@").last ?? "localhost"
         return "<\(UUID().uuidString.lowercased())@\(domain.isEmpty ? "localhost" : domain)>"
+    }
+    
+    internal static func generateBoundary() -> String {
+        return "----=_MailPacket_\(UUID().uuidString.lowercased())"
     }
     
     internal static func format(date: Date,

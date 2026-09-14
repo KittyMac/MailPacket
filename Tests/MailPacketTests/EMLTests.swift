@@ -133,6 +133,97 @@ final class EMLTests: XCTestCase {
         }
     }
 
+    func testHtmlAlternative() {
+        let message = EML(from: EML.Address("alice@example.com", name: "Alice"),
+                          to: [EML.Address("bob@example.com", name: "Bob")],
+                          subject: "html test",
+                          body: "plain text fallback\n",
+                          html: "<html><body><p>rich <b>text</b></p></body></html>\n",
+                          date: fixedDate,
+                          timeZone: utc,
+                          messageID: "<html@example.com>",
+                          userAgent: nil)
+        let eml = message.eml()
+
+        XCTAssertTrue(eml.contains("Content-Type: multipart/alternative; boundary=\"\(message.boundary)\""))
+        XCTAssertTrue(eml.contains("\r\n--\(message.boundary)\r\nContent-Type: text/plain; charset=us-ascii"))
+        XCTAssertTrue(eml.contains("\r\n--\(message.boundary)\r\nContent-Type: text/html; charset=us-ascii"))
+        XCTAssertTrue(eml.hasSuffix("\r\n--\(message.boundary)--\r\n"))
+        XCTAssertTrue(eml.contains("plain text fallback"))
+        XCTAssertTrue(eml.contains("<b>text</b>"))
+
+        // plain must come before html
+        let plainIndex = eml.range(of: "text/plain")!.lowerBound
+        let htmlIndex = eml.range(of: "text/html")!.lowerBound
+        XCTAssertLessThan(plainIndex, htmlIndex)
+    }
+
+    func testHtmlUnicodeIsEncoded() {
+        let message = EML(from: EML.Address("alice@example.com"),
+                          to: [EML.Address("bob@example.com")],
+                          subject: "html unicode",
+                          body: "plain ☕\n",
+                          html: "<p>rich ☕</p>\n",
+                          date: fixedDate,
+                          timeZone: utc,
+                          messageID: "<htmlunicode@example.com>")
+        let eml = message.eml()
+
+        XCTAssertEqual(eml.components(separatedBy: "Content-Transfer-Encoding: base64").count - 1, 2)
+        XCTAssertEqual(eml.components(separatedBy: "charset=utf-8").count - 1, 2)
+        XCTAssertFalse(eml.contains("☕"))
+    }
+
+    // minified html is one enormous line, which has to force base64
+    func testHtmlLongLine() {
+        let message = EML(from: EML.Address("alice@example.com"),
+                          to: [EML.Address("bob@example.com")],
+                          subject: "minified",
+                          body: "plain\n",
+                          html: "<p>" + String(repeating: "x", count: 1200) + "</p>\n",
+                          date: fixedDate,
+                          timeZone: utc,
+                          messageID: "<minified@example.com>")
+        let eml = message.eml()
+
+        XCTAssertTrue(eml.contains("Content-Transfer-Encoding: 7bit"))
+        XCTAssertTrue(eml.contains("Content-Transfer-Encoding: base64"))
+        for line in eml.components(separatedBy: "\r\n") {
+            XCTAssertLessThanOrEqual(line.utf8.count, 998)
+        }
+    }
+
+    func testBoundaryCollisionIsAvoided() {
+        var message = EML(from: EML.Address("alice@example.com"),
+                          to: [EML.Address("bob@example.com")],
+                          subject: "collision",
+                          body: "plain\n",
+                          html: "<p>rich</p>\n",
+                          date: fixedDate,
+                          timeZone: utc,
+                          messageID: "<collision@example.com>")
+        message.boundary = "COLLIDE"
+        message.html = "<p>this body mentions COLLIDE on purpose</p>\n"
+        let eml = message.eml()
+
+        XCTAssertFalse(eml.contains("\r\n--COLLIDE\r\n"))
+        XCTAssertTrue(eml.contains("multipart/alternative; boundary=\"----=_MailPacket_"))
+    }
+
+    func testNoHtmlStaysSinglePart() {
+        let message = EML(from: EML.Address("alice@example.com"),
+                          to: [EML.Address("bob@example.com")],
+                          subject: "single",
+                          body: "plain\n",
+                          date: fixedDate,
+                          timeZone: utc,
+                          messageID: "<single@example.com>")
+        let eml = message.eml()
+
+        XCTAssertFalse(eml.contains("multipart"))
+        XCTAssertFalse(eml.contains(message.boundary))
+    }
+
     func testThreading() {
         let message = EML(from: EML.Address("alice@example.com"),
                           to: [EML.Address("bob@example.com")],
