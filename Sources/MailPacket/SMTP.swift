@@ -1,3 +1,6 @@
+// flynn:ignore Unsafe Self Violation: self referenced in a callback executed on a different actor or thread
+
+
 import Foundation
 import Flynn
 import Hitch
