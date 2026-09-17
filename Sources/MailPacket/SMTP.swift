@@ -1,4 +1,3 @@
-// flynn:ignore Unsafe Self Violation: self referenced in a callback executed on a different actor or thread
 
 
 import Foundation
@@ -6,7 +5,7 @@ import Flynn
 import Hitch
 
 #if !canImport(libetpan)
-public class SMTP: Actor {
+public class SMTP: IOActor {
     
     public var unsafeConnectionInfo: ConnectionInfo? = nil
     
@@ -77,7 +76,7 @@ import libetpan
 import FoundationNetworking
 #endif
 
-public class SMTP: Actor {
+public class SMTP: IOActor {
     
     public enum Security: Int, Codable {
         case ssl        // implicit tls, typically port 465
@@ -107,16 +106,11 @@ public class SMTP: Actor {
         }
     }
     
-    private let queue: OperationQueue
-    
     private let smtp: UnsafeMutableRawPointer?
     
     public var unsafeConnectionInfo: ConnectionInfo?
     
     public override init() {
-        queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        
         smtp = cmailsmtp_new()
     }
     
@@ -146,39 +140,37 @@ public class SMTP: Actor {
                              oauth2: Bool,
                              security: Security,
                              _ returnCallback: @escaping (String?) -> ()) {
-        queue.addOperation {
-            var result: CSMTPError = 0
-            
-            switch security {
-            case .ssl:
-                result = cmailsmtp_ssl_connect(self.smtp, domain, UInt16(port))
-            case .startTLS:
-                result = cmailsmtp_starttls_connect(self.smtp, domain, UInt16(port))
-            }
-            
-            if let error = result.toSMTPString(self.smtpResponse()) {
-                return returnCallback(error)
-            }
-            
-            if oauth2 {
-                result = cmailsmtp_oauth2_authenticate(self.smtp, account, password)
-            } else {
-                result = cmailsmtp_login(self.smtp, account, password)
-            }
-            
-            if let error = result.toSMTPString(self.smtpResponse()) {
-                return returnCallback(error)
-            }
-            
-            self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
-                                                       port: port,
-                                                       account: account,
-                                                       password: password,
-                                                       oauth2: oauth2,
-                                                       security: security)
-            
-            returnCallback(nil)
+        var result: CSMTPError = 0
+        
+        switch security {
+        case .ssl:
+            result = cmailsmtp_ssl_connect(self.smtp, domain, UInt16(port))
+        case .startTLS:
+            result = cmailsmtp_starttls_connect(self.smtp, domain, UInt16(port))
         }
+        
+        if let error = result.toSMTPString(self.smtpResponse()) {
+            return returnCallback(error)
+        }
+        
+        if oauth2 {
+            result = cmailsmtp_oauth2_authenticate(self.smtp, account, password)
+        } else {
+            result = cmailsmtp_login(self.smtp, account, password)
+        }
+        
+        if let error = result.toSMTPString(self.smtpResponse()) {
+            return returnCallback(error)
+        }
+        
+        self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
+                                                   port: port,
+                                                   account: account,
+                                                   password: password,
+                                                   oauth2: oauth2,
+                                                   security: security)
+        
+        returnCallback(nil)
     }
     
     /// Sends an already composed rfc822 message. from and recipients are the
@@ -204,33 +196,31 @@ public class SMTP: Actor {
             bytes.removeLast(2)
         }
         
-        queue.addOperation {
-            let cRecipients = recipients.map { strdup($0) }
-            defer {
-                for cRecipient in cRecipients {
-                    free(cRecipient)
-                }
+        let cRecipients = recipients.map { strdup($0) }
+        defer {
+            for cRecipient in cRecipients {
+                free(cRecipient)
             }
-            
-            var pointers = cRecipients.map { UnsafePointer<CChar>($0) }
-            
-            let result: CSMTPError = bytes.withUnsafeBufferPointer { buffer in
-                return buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { emlPtr in
-                    return cmailsmtp_send(self.smtp,
-                                          from,
-                                          Int32(recipients.count),
-                                          &pointers,
-                                          emlPtr,
-                                          Int32(bytes.count))
-                }
-            }
-            
-            if let error = result.toSMTPString(self.smtpResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
         }
+        
+        var pointers = cRecipients.map { UnsafePointer<CChar>($0) }
+        
+        let result: CSMTPError = bytes.withUnsafeBufferPointer { buffer in
+            return buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { emlPtr in
+                return cmailsmtp_send(self.smtp,
+                                      from,
+                                      Int32(recipients.count),
+                                      &pointers,
+                                      emlPtr,
+                                      Int32(bytes.count))
+            }
+        }
+        
+        if let error = result.toSMTPString(self.smtpResponse()) {
+            return returnCallback(error)
+        }
+        
+        returnCallback(nil)
     }
     
     /// Composes and sends an EML. The envelope is taken from the message; bcc

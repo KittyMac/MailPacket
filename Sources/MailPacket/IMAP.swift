@@ -1,4 +1,3 @@
-// flynn:ignore Unsafe Self Violation: self referenced in a callback executed on a different actor or thread
 
 import Foundation
 import Flynn
@@ -6,7 +5,7 @@ import Hitch
 import Sextant
 
 #if !canImport(libetpan)
-public class IMAP: Actor {
+public class IMAP: IOActor {
     
     public var unsafeConnectionInfo: ConnectionInfo? = nil
     
@@ -127,7 +126,7 @@ import libetpan
 import FoundationNetworking
 #endif
 
-public class IMAP: Actor {
+public class IMAP: IOActor {
     public struct Header: Codable {
         public let messageID: Int
         public let gmailThreadId: String?
@@ -163,17 +162,12 @@ public class IMAP: Actor {
         }
     }
     
-    private let queue: OperationQueue
-
     private let imap: UnsafeMutableRawPointer?
     
     public var unsafeConnectionInfo: ConnectionInfo?
     private var hasGmailExtension: Bool = false
     
     public override init() {
-        queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-
         imap = cmailimap_new()
     }
     
@@ -202,108 +196,98 @@ public class IMAP: Actor {
                              password: String,
                              oauth2: Bool,
                              _ returnCallback: @escaping (String?) -> ()) {
-        queue.addOperation {
-            var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            if oauth2 {
-                result = cmailimap_oauth2_authenticate(self.imap, account, password);
-            } else {
-                result = cmailimap_login(self.imap, account, password)
-            }
-            
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            self.hasGmailExtension = cmailimap_has_extension(self.imap, "X-GM-EXT-1")
-            self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
-                                                       port: port,
-                                                       account: account,
-                                                       password: password,
-                                                       oauth2: oauth2,
-                                                       hasGmailExtension: self.hasGmailExtension)
-            
-            result = cmailimap_examine(self.imap, "INBOX")
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
+        var result: CError = cmailimap_ssl_connect(self.imap, domain, UInt16(port))
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
         }
+        
+        if oauth2 {
+            result = cmailimap_oauth2_authenticate(self.imap, account, password);
+        } else {
+            result = cmailimap_login(self.imap, account, password)
+        }
+        
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
+        }
+        
+        self.hasGmailExtension = cmailimap_has_extension(self.imap, "X-GM-EXT-1")
+        self.unsafeConnectionInfo = ConnectionInfo(domain: domain,
+                                                   port: port,
+                                                   account: account,
+                                                   password: password,
+                                                   oauth2: oauth2,
+                                                   hasGmailExtension: self.hasGmailExtension)
+        
+        result = cmailimap_examine(self.imap, "INBOX")
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
+        }
+        
+        returnCallback(nil)
     }
     
     internal func _beGetFolders(_ returnCallback: @escaping ([String]) -> ()) {
-        queue.addOperation {
-            if let mailboxesUTF8 = cmailimap_list(self.imap) {
-                let json = Hitch(own: mailboxesUTF8)
-                guard json.starts(with: "MAILIMAP_") == false else {
-                    return returnCallback([])
-                }
-                let mailboxes: [String] = json.query("$[*]") ?? []
-                returnCallback(mailboxes)
+        if let mailboxesUTF8 = cmailimap_list(self.imap) {
+            let json = Hitch(own: mailboxesUTF8)
+            guard json.starts(with: "MAILIMAP_") == false else {
+                return returnCallback([])
             }
+            let mailboxes: [String] = json.query("$[*]") ?? []
+            returnCallback(mailboxes)
         }
     }
     
     internal func _beSelect(folder: String,
                             _ returnCallback: @escaping (String?) -> ()) {
-        queue.addOperation {
-            let result: CError = cmailimap_select(self.imap, folder)
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
+        let result: CError = cmailimap_select(self.imap, folder)
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
         }
+        
+        returnCallback(nil)
     }
     
     internal func _beExamine(folder: String,
                             _ returnCallback: @escaping (String?) -> ()) {
-        queue.addOperation {
-            let result: CError = cmailimap_examine(self.imap, folder)
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
+        let result: CError = cmailimap_examine(self.imap, folder)
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
         }
+        
+        returnCallback(nil)
     }
     
     internal func _beSearch(folder: String,
                             after: Date,
                             smaller: Int = 0,
                             _ returnCallback: @escaping (String?, [Int]) -> ()) {
-        queue.addOperation {
-            let result: CError = cmailimap_examine(self.imap, folder)
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error, [])
-            }
-
-            let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: after)
-            guard let day = calendarDate.day,
-                  let month = calendarDate.month,
-                  let year = calendarDate.year else {
-                return returnCallback("failed to extract date components", [])
-            }
-            if let jsonUTF8 = cmailimap_search(self.imap,
-                                               Int32(day),
-                                               Int32(month),
-                                               Int32(year),
-                                               Int32(smaller)) {
-                let json = Hitch(own: jsonUTF8)
-                guard json.starts(with: "MAILIMAP_") == false else {
-                    return returnCallback(json.toString(), [])
-                }
-
-                let messageIDs: [Int] = json.query("$[*]") ?? []
-                return returnCallback(nil, messageIDs)
-            }
-            
-            return returnCallback("cmailimap_search returned null", [])
+        let result: CError = cmailimap_examine(self.imap, folder)
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error, [])
         }
+
+        let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: after)
+        guard let day = calendarDate.day,
+              let month = calendarDate.month,
+              let year = calendarDate.year else {
+            return returnCallback("failed to extract date components", [])
+        }
+        if let jsonUTF8 = cmailimap_search(self.imap,
+                                           Int32(day),
+                                           Int32(month),
+                                           Int32(year),
+                                           Int32(smaller)) {
+            let json = Hitch(own: jsonUTF8)
+            guard json.starts(with: "MAILIMAP_") == false else {
+                return returnCallback(json.toString(), [])
+            }
+
+            let messageIDs: [Int] = json.query("$[*]") ?? []
+            return returnCallback(nil, messageIDs)
+        }
+        
+        return returnCallback("cmailimap_search returned null", [])
     }
     
     internal func _beHeaders(messageIDs: [Int],
@@ -312,24 +296,22 @@ public class IMAP: Actor {
             return returnCallback(nil, [])
         }
         
-        queue.addOperation {
-            var cMessageIDs = messageIDs.map { Int32($0) }
-            
-            if let jsonUTF8 = cmailimap_headers(self.imap,
-                                                Int32(messageIDs.count),
-                                                &cMessageIDs,
-                                                self.hasGmailExtension) {
-                let json = Hitch(own: jsonUTF8)
-                guard json.starts(with: "MAILIMAP_") == false else {
-                    return returnCallback(json.toString(), [])
-                }
-
-                let headers: [Header] = json.query("$[*]") ?? []
-                return returnCallback(nil, headers)
+        var cMessageIDs = messageIDs.map { Int32($0) }
+        
+        if let jsonUTF8 = cmailimap_headers(self.imap,
+                                            Int32(messageIDs.count),
+                                            &cMessageIDs,
+                                            self.hasGmailExtension) {
+            let json = Hitch(own: jsonUTF8)
+            guard json.starts(with: "MAILIMAP_") == false else {
+                return returnCallback(json.toString(), [])
             }
-            
-            return returnCallback("cmailimap_headers returned null", [])
+
+            let headers: [Header] = json.query("$[*]") ?? []
+            return returnCallback(nil, headers)
         }
+        
+        return returnCallback("cmailimap_headers returned null", [])
     }
     
     internal func _beDownload(messageIDs: [Int],
@@ -338,24 +320,22 @@ public class IMAP: Actor {
             return returnCallback(nil, [])
         }
         
-        queue.addOperation {
-            var cMessageIDs = messageIDs.map { Int32($0) }
-            
-            if let jsonUTF8 = cmailimap_download(self.imap,
-                                                 Int32(messageIDs.count),
-                                                 &cMessageIDs,
-                                                 self.hasGmailExtension) {
-                let json = Hitch(own: jsonUTF8)
-                guard json.starts(with: "MAILIMAP_") == false else {
-                    return returnCallback(json.toString(), [])
-                }
-                
-                let emails: [Email] = json.query("$[*]") ?? []
-                return returnCallback(nil, emails)
+        var cMessageIDs = messageIDs.map { Int32($0) }
+        
+        if let jsonUTF8 = cmailimap_download(self.imap,
+                                             Int32(messageIDs.count),
+                                             &cMessageIDs,
+                                             self.hasGmailExtension) {
+            let json = Hitch(own: jsonUTF8)
+            guard json.starts(with: "MAILIMAP_") == false else {
+                return returnCallback(json.toString(), [])
             }
             
-            return returnCallback("cmailimap_download returned null", [])
+            let emails: [Email] = json.query("$[*]") ?? []
+            return returnCallback(nil, emails)
         }
+        
+        return returnCallback("cmailimap_download returned null", [])
     }
     
     /// Appends an already composed rfc822 message to the given folder. This is
@@ -372,23 +352,21 @@ public class IMAP: Actor {
             .replacingOccurrences(of: "\n", with: "\r\n")
             .utf8)
         
-        queue.addOperation {
-            let result: CError = bytes.withUnsafeBufferPointer { buffer in
-                return buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { emlPtr in
-                    return cmailimap_append(self.imap,
-                                            folder,
-                                            emlPtr,
-                                            Int32(bytes.count),
-                                            seen)
-                }
+        let result: CError = bytes.withUnsafeBufferPointer { buffer in
+            return buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { emlPtr in
+                return cmailimap_append(self.imap,
+                                        folder,
+                                        emlPtr,
+                                        Int32(bytes.count),
+                                        seen)
             }
-            
-            if let error = result.toString(self.imapResponse()) {
-                return returnCallback(error)
-            }
-            
-            returnCallback(nil)
         }
+        
+        if let error = result.toString(self.imapResponse()) {
+            return returnCallback(error)
+        }
+        
+        returnCallback(nil)
     }
     
     /// Composes an EML and appends it to the given folder.
